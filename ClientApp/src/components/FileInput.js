@@ -21,20 +21,20 @@ export const FileInput = () => {
         data.append('body', body);
         data.append('name', name);
 
-        try {
-            await fetch('api/binary/upload', {
-                method: 'POST',
-                headers: {
-                    'enctype': 'multipart/form-data'
-                },
-                body: data
+        fetch('api/binary/upload', {
+            method: 'POST',
+            headers: {
+                'enctype': 'multipart/form-data'
+            },
+            body: data
+        })
+            .then(() => {
+                console.log(`binary named '${name}' uploaded successfully`);
+                setSuccessAlert(true);
+            }).catch((e) => {
+                console.log(`binary upload failed: ${e}`);
+                setFailureAlert(true);
             });
-            console.log(`binary named '${name}' uploaded successfully`);
-            setSuccessAlert(true);
-        } catch (e) {
-            console.log(`binary upload failed: ${e}`);
-            setSuccessAlert(true);
-        }
     }
 
     const onSuccessAlertDismiss = () => setSuccessAlert(false);
@@ -47,6 +47,8 @@ export const FileInput = () => {
                     <Input
                         type="file"
                         onChange={(e) => {
+                            setSuccessAlert(false);
+                            setFailureAlert(false);
                             setBody(e.target.files[0]);
                             setName(e.target.files[0].name);
                         }}
@@ -67,10 +69,10 @@ export const FileInput = () => {
             </Form>
             <br></br>
             <Alert color="info" isOpen={showSuccessAlert} toggle={onSuccessAlertDismiss}>
-                `Upload binary named '${name}' successfully`
+                Upload binary named <i>{name}</i> successfully
             </Alert>
             <Alert color="danger" isOpen={showFailureAlert} toggle={onFailureAlertDismiss}>
-                `Failed to upload binary named '${name}' `
+                Failed to upload binary named <i>{name}</i>
             </Alert>
         </div>
     );
