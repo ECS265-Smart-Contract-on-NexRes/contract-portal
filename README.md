@@ -12,7 +12,7 @@ Install docker.
 
 ### Run the app locally
 <hr>
-Run the following command
+Run the following command in the root directory of this project
 
 ```bash
 docker build -t contract-portal .
