@@ -28,7 +28,11 @@ export const FileInput = () => {
             },
             body: data
         })
-            .then(() => {
+            .then((res) => {
+                if (!res.ok) {
+                    // make the promise be rejected if we didn't get a 2xx response
+                    throw new Error("Not 2xx response", { cause: res });
+                }
                 console.log(`binary named '${name}' uploaded successfully`);
                 setSuccessAlert(true);
             }).catch((e) => {
@@ -72,7 +76,7 @@ export const FileInput = () => {
                 Upload binary named <i>{name}</i> successfully
             </Alert>
             <Alert color="danger" isOpen={showFailureAlert} toggle={onFailureAlertDismiss}>
-                Failed to upload binary named <i>{name}</i>
+                Failed to upload the binary file!
             </Alert>
         </div>
     );
