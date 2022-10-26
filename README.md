@@ -32,4 +32,6 @@ Run
 ls /tmp
 ```
 and you shall see previously uploaded binaries.
-### Check the app on GCP (TODO)
+### Check the app on GCP 
+When 'allUsers' is granted with 'Cloud Run Invoker', the app can be accessed at: 
+https://contract-portal-web-emwnlmwkea-uw.a.run.app/
