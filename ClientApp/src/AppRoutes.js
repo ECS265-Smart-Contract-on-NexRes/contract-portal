@@ -1,5 +1,6 @@
 import { DeleteBinary } from "./components/DeleteBinary";
 import { Home } from "./components/Home";
+import { Upload } from "./components/Upload"
 
 const AppRoutes = [
   {
@@ -7,8 +8,8 @@ const AppRoutes = [
     element: <Home />
   },
   {
-    path: '/delete',
-    element: <DeleteBinary />
+    path: '/upload',
+    element: <Upload />
   }
 ];
 
