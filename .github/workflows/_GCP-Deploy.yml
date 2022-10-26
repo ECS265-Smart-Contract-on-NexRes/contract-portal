@@ -19,7 +19,7 @@ on:
 
 name: Build and Deploy to Cloud Run
 env:
-  PROJECT_ID: contract-portal
+  PROJECT_ID: contract-portal-366700
   SERVICE: contract-portal-web
 
 jobs:
