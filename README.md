@@ -16,7 +16,7 @@ Run the following command in the root directory of this project
 
 ```bash
 docker build -t contract-portal .
-docker run -d -p 8080:80 --name contract-portal -t contract-portal
+docker run -d -p 8080:8080 --name contract-portal -t contract-portal
 ```
 
 Now you can access the web portal at http://localhost:8080/
