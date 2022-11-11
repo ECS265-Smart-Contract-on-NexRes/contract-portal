@@ -1,3 +1,3 @@
-[submodule "nexres/resilientdb.github.io"]
-	path = nexres/resilientdb.github.io
-	url = https://github.com/ECS265-Smart-Contract-on-NexRes/resilientdb.github.io.git
+[submodule "resilientdb"]
+	path = nexres
+	url = https://github.com/ECS265-Smart-Contract-on-NexRes/resilientdb
