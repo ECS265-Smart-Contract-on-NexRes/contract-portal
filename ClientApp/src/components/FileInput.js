@@ -73,7 +73,7 @@ export const FileInput = () => {
             </Form>
             <br></br>
             <Alert color="info" isOpen={showSuccessAlert} toggle={onSuccessAlertDismiss}>
-                Upload binary named <i>{name}</i> successfully
+                Smart contract <i>{name}</i> uploaded successfully
             </Alert>
             <Alert color="danger" isOpen={showFailureAlert} toggle={onFailureAlertDismiss}>
                 Failed to upload the binary file!
