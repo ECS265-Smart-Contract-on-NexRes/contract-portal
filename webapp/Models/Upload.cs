@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace ContractPortal.Models;
 
-public class Binary
+public class Upload
 {
     [FromForm(Name="body")]
     public IFormFile Body { get; set; }

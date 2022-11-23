@@ -1,8 +1,23 @@
+using System.Diagnostics;
+
 var builder = WebApplication.CreateBuilder(args);
 string port = Environment.GetEnvironmentVariable("PORT");
 
-// Add services to the container.
+Process process = new Process
+{
+    StartInfo = new ProcessStartInfo
+    {
+        FileName = "bash",
+        RedirectStandardInput = true,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        UseShellExecute = false
+    }
+};
+process.Start();
 
+// Add services to the container.
+builder.Services.AddSingleton<Process>(process);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSwaggerGen();
 

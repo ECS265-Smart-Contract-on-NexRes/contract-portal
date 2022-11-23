@@ -15,7 +15,7 @@ RUN apt-get install -y libpng-dev libjpeg-dev curl libxi6 build-essential libgl1
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs
 WORKDIR /src
-COPY ["ContractPortal.csproj", "."]
+COPY ["./webapp/ContractPortal.csproj", "."]
 RUN dotnet restore "./ContractPortal.csproj"
 COPY . .
 WORKDIR "/src/."
