@@ -12,7 +12,7 @@ export class Home extends Component {
     this.populateWeatherData();
   }
 
-  static renderBinariesTable(kvStatus) {
+  renderBinariesTable(kvStatus) {
     return (
       <table className='table table-striped' aria-labelledby="tabelLabel">
         <thead>
@@ -23,8 +23,8 @@ export class Home extends Component {
           </tr>
         </thead>
         <tbody>
-          {kvStatus.map(item =>
-            <tr key={item.Guid}>
+          {kvStatus.map((item, index) =>
+            <tr key={index}>
               <td>{item.Name}</td>
               <td>{item.Guid}</td>
               <td>{item.IsPublished}</td>
@@ -38,7 +38,7 @@ export class Home extends Component {
   render() {
     let contents = this.state.loading
       ? <p><em>Loading...</em></p>
-      : Home.renderBinariesTable(this.state.kvStatus);
+      : this.renderBinariesTable(this.state.kvStatus);
 
     return (
       <div>

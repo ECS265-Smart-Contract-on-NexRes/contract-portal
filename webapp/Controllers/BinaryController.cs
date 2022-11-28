@@ -16,7 +16,7 @@ public class BinaryController : ControllerBase
 {
     static readonly Dictionary<Guid, KVStatus> _dictionary = new Dictionary<Guid, KVStatus>();
     Process _process;
-    string KVSERVER_BASE_PATH = Environment.GetEnvironmentVariable("KVSERVER_BASE_PATH");
+    string KVSERVER_BASE_PATH = "/home/azureuser/resilientdb";
 
     private static readonly string[] Summaries = new[]
     {
@@ -30,6 +30,7 @@ public class BinaryController : ControllerBase
     {
         _logger = logger;
         _process = process;
+        _logger.LogInformation(KVSERVER_BASE_PATH);   
     }
 
     [HttpGet]
@@ -56,25 +57,24 @@ public class BinaryController : ControllerBase
             return BadRequest(new Exception("File is empty"));
         }
 
-        var result = new StringBuilder();
+        var resultStr = string.Empty;
         using (var reader = new StreamReader(formFile.OpenReadStream()))
         {
-            while (reader.Peek() >= 0)
-            {
-                result.AppendLine(await reader.ReadLineAsync());
-            }
+            resultStr = await reader.ReadToEndAsync();
+
         }
-        var resultStr = result.ToString();
+        resultStr = resultStr.Replace("\"","\"\"");
         var guid = Guid.NewGuid();
 
         var psi = new ProcessStartInfo
         {
             FileName = $"{KVSERVER_BASE_PATH}/bazel-bin/example/kv_server_tools",
-            Arguments = $"{KVSERVER_BASE_PATH}/example/kv_client_config.config set {guid} {resultStr}",
+            Arguments = $"{KVSERVER_BASE_PATH}/example/kv_client_config.config set {guid} \"{resultStr}\"",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
+        _logger.LogInformation($"Arguments: {$"{KVSERVER_BASE_PATH}/example/kv_client_config.config set {guid} \"{resultStr}\""}");
 
         var proc = new Process
         {
