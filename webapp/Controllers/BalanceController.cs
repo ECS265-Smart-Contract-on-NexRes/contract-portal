@@ -14,18 +14,18 @@ namespace ContractPortal.Controllers;
 [Route("api/balance/{action}")]
 public class BalanceController : ControllerBase
 {
-    string PYTHON_BASE_PATH;
-
+    string PYTHON_BASE_PATH =
+    #if DEBUG
+    "/home/siyuanliu/repos/contract-portal/contractServer"
+    #else
+    "/home/azureuser/contract-portal/contractServer";
+    #endif
     private readonly ILogger<BalanceController> _logger;
 
     public BalanceController(ILogger<BalanceController> logger,
                             Process process)
     {
         _logger = logger;
-        PYTHON_BASE_PATH = Environment.GetEnvironmentVariable("PYTHON_BASE_PATH");
-        if (PYTHON_BASE_PATH == null) {
-            PYTHON_BASE_PATH = "/home/siyuanliu/repos/contract-portal/contractServer";
-        }
         _logger.LogInformation(PYTHON_BASE_PATH);
     }
     
@@ -52,7 +52,7 @@ public class BalanceController : ControllerBase
         await proc.WaitForExitAsync();
         using (System.IO.StreamReader myOutput = proc.StandardOutput)
         {
-            var output = myOutput.ReadToEnd();
+            var output = new string(myOutput.ReadToEnd().Where(c => char.IsDigit(c)).ToArray());
             _logger.LogInformation($"Get balance: {output}");
             if (output != null &&
                 output.Length > 0)

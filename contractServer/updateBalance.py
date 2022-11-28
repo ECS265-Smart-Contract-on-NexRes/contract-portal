@@ -12,6 +12,7 @@ client.connect(ip_port)  # 连接
 print("服务器已连接")
 
 sol_file_name = "test.sol"
+print("add " + sys.argv[1])
 func_name, para, contract_id = 'add', sys.argv[1], 1001
 
 input_para = [sol_file_name, func_name, para, contract_id]

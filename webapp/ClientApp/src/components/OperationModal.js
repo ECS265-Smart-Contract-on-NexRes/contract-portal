@@ -55,7 +55,8 @@ class OperationModal extends React.Component {
                         }}
                       />
                     </FormGroup>
-                    <Button onClick={() => this.updateBalance(this.state.add)}>Add</Button>
+                    <Button onClick={() => {
+                      this.updateBalance(this.state.add);}}>Add</Button>
                   </CardFooter>
                 </Card>
               </Col>
