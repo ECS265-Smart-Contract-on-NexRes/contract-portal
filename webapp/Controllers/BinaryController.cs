@@ -42,6 +42,8 @@ public class BinaryController : ControllerBase
         {
             if (!_dictionary[guid].IsPublished)
             {
+#if DEBUG
+#else
                 var psi = new ProcessStartInfo
                 {
                     FileName = $"{KVSERVER_BASE_PATH}/bazel-bin/example/kv_server_tools",
@@ -67,11 +69,14 @@ public class BinaryController : ControllerBase
                     {
                         var val = output.Split("client get value =");
                         if (val.Length >= 2 &&
-                            val[1].Trim().Length > 0) {
-                                _dictionary[guid].IsPublished = true;
-                            }
+                            val[1].Trim().Length > 0)
+                        {
+                            _dictionary[guid].IsPublished = true;
+                            _dictionary[guid].Content = val[1].Trim();
+                        }
                     }
                 }
+#endif
             }
             list.Add(_dictionary[guid]);
         }

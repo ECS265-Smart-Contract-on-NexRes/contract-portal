@@ -1,37 +1,49 @@
 import React, { Component } from 'react';
 import { Button } from 'reactstrap';
+import OperationModal from './OperationModal';
 export class Home extends Component {
   static displayName = Home.name;
 
   constructor(props) {
     super(props);
-    this.state = { kvStatus: [], loading: true };
+    this.state = { kvStatus: [], loading: true, selectedKey: null };
   }
 
   componentDidMount() {
     this.populateWeatherData();
   }
 
+  undoSelect() {
+    this.setState({...this.state, selectedKey: null});
+  }
+
   renderBinariesTable(kvStatus) {
     return (
-      <table className='table table-striped' aria-labelledby="tabelLabel">
-        <thead>
-          <tr>
-            <th>File Name</th>
-            <th>Key</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {kvStatus.map((item, index) =>
-            <tr key={index}>
-              <td>{item.name}</td>
-              <td>{item.key}</td>
-              <td>{item.isPublished.toString()}</td>
+      <div>
+        {kvStatus.map((item) =>
+          <OperationModal key={item.key} selectedKey={this.state.selectedKey} undo={this.undoSelect.bind(this)} modal={false} kvStatus={item}></OperationModal>
+        )}
+        <table className='table table-striped' aria-labelledby="tabelLabel">
+          <thead>
+            <tr>
+              <th>File Name</th>
+              <th>Key</th>
+              <th>Status</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {kvStatus.map((item) =>
+              <tr
+                onClick={() => {this.setState({...this.state, selectedKey: item.key})}}
+                key={item.key}>
+                <td>{item.name}</td>
+                <td>{item.key}</td>
+                <td>{item.isPublished.toString()}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     );
   }
 
