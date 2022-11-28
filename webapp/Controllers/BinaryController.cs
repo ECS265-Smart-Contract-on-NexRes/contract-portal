@@ -30,16 +30,49 @@ public class BinaryController : ControllerBase
     {
         _logger = logger;
         _process = process;
-        _logger.LogInformation(KVSERVER_BASE_PATH);   
+        _logger.LogInformation(KVSERVER_BASE_PATH);
     }
 
     [HttpGet]
     [ActionName("List")]
-    public IEnumerable<KVStatus> List()
+    public async Task<IEnumerable<KVStatus>> List()
     {
         var list = new List<KVStatus>();
         foreach (var guid in _dictionary.Keys)
         {
+            if (!_dictionary[guid].IsPublished)
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = $"{KVSERVER_BASE_PATH}/bazel-bin/example/kv_server_tools",
+                    Arguments = $"{KVSERVER_BASE_PATH}/example/kv_client_config.config get {guid}",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+                _logger.LogInformation($"{KVSERVER_BASE_PATH}/example/kv_client_config.config get {guid}");
+
+                var proc = new Process
+                {
+                    StartInfo = psi
+                };
+
+                proc.Start();
+                await proc.WaitForExitAsync();
+                using (System.IO.StreamReader myOutput = proc.StandardOutput)
+                {
+                    var output = myOutput.ReadToEnd();
+                    if (output != null &&
+                        output.Length > 00)
+                    {
+                        var val = output.Split("client get value =");
+                        if (val.Length >= 2 &&
+                            val[1].Trim().Length > 0) {
+                                _dictionary[guid].IsPublished = true;
+                            }
+                    }
+                }
+            }
             list.Add(_dictionary[guid]);
         }
         return list;
@@ -63,9 +96,11 @@ public class BinaryController : ControllerBase
             resultStr = await reader.ReadToEndAsync();
 
         }
-        resultStr = resultStr.Replace("\"","\"\"");
+        resultStr = resultStr.Replace("\"", "\"\"");
         var guid = Guid.NewGuid();
 
+#if DEBUG
+#else
         var psi = new ProcessStartInfo
         {
             FileName = $"{KVSERVER_BASE_PATH}/bazel-bin/example/kv_server_tools",
@@ -83,7 +118,7 @@ public class BinaryController : ControllerBase
 
         proc.Start();
         await proc.WaitForExitAsync();
-
+#endif
 
         _dictionary[guid] = new KVStatus
         {

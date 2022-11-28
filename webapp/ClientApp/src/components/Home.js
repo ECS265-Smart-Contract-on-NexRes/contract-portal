@@ -25,9 +25,9 @@ export class Home extends Component {
         <tbody>
           {kvStatus.map((item, index) =>
             <tr key={index}>
-              <td>{item.Name}</td>
-              <td>{item.Guid}</td>
-              <td>{item.IsPublished}</td>
+              <td>{item.name}</td>
+              <td>{item.key}</td>
+              <td>{item.isPublished.toString()}</td>
             </tr>
           )}
         </tbody>
