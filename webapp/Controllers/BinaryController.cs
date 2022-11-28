@@ -18,11 +18,6 @@ public class BinaryController : ControllerBase
     Process _process;
     string KVSERVER_BASE_PATH = "/home/azureuser/resilientdb";
 
-    private static readonly string[] Summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
     private readonly ILogger<BinaryController> _logger;
 
     public BinaryController(ILogger<BinaryController> logger,

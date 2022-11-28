@@ -7,7 +7,7 @@ export class Upload extends Component {
   render() {
     return (
       <div>
-        <h1>Upload a smart contract binary</h1>
+        <h1>Upload a smart contract</h1>
         <FileInput></FileInput>
       </div>
     );
