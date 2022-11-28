@@ -8,7 +8,7 @@ class OperationModal extends React.Component {
     super(props);
     this.toggle = this.toggle.bind(this);
     this.isOpen = this.isOpen.bind(this);
-    this.state = { balance: null };
+    this.state = { balance: null, add: 0 };
   }
 
   toggle() {
@@ -50,11 +50,12 @@ class OperationModal extends React.Component {
                   <CardFooter>
                     <FormGroup>
                       <Input
-
+                        onChange={(e) => {
+                          this.setState({ ...this.state, add: e.target.value })
+                        }}
                       />
                     </FormGroup>
-
-                    <Button type="submit">Add</Button>
+                    <Button onClick={() => this.updateBalance(this.state.add)}>Add</Button>
                   </CardFooter>
                 </Card>
               </Col>
@@ -67,13 +68,28 @@ class OperationModal extends React.Component {
   }
 
   componentDidMount() {
-    this.GetBalance();
+    this.getBalance();
   }
 
-  async GetBalance() {
+  async getBalance() {
     const response = await fetch('api/balance/get');
     const data = await response.json();
     this.setState({ balance: data });
+  }
+
+  async updateBalance(add) {
+    const response = await fetch(`api/balance/update/${add}`, {
+      method: 'POST'
+    }).then((res) => {
+      if (!res.ok) {
+        // make the promise be rejected if we didn't get a 2xx response
+        throw new Error("Not 2xx response", { cause: res });
+      }
+    })
+    .then(this.getBalance.bind(this))
+    .catch((e) => {
+      console.log(`Update balance failed`); 
+    });
   }
 }
 

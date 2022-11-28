@@ -63,4 +63,28 @@ public class BalanceController : ControllerBase
         }
         return null;
     }
+
+    [HttpPost]
+    [ActionName("Update")]
+    [Route("{add}")]
+    public async Task Update(string add)
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = $"python3",
+            Arguments = $"{PYTHON_BASE_PATH}/updateBalance.py {add}",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        _logger.LogInformation($"{PYTHON_BASE_PATH}/updateBalance.py {add}");
+
+        var proc = new Process
+        {
+            StartInfo = psi
+        };
+
+        proc.Start();
+        await proc.WaitForExitAsync();
+    }
 }
