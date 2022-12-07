@@ -13,7 +13,11 @@ print("服务器已连接")
 
 sol_file_name = "test.sol"
 print("add " + sys.argv[1])
-func_name, para, contract_id = 'add', sys.argv[1], 1001
+addVal = int(sys.argv[1])
+if (addVal < 0):
+    func_name, para, contract_id = 'minus', [-addVal], 1001
+else:
+    func_name, para, contract_id = 'add', [addVal], 1001
 
 input_para = [sol_file_name, func_name, para, contract_id]
 input_para = json.dumps(input_para)
