@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using ContractPortal.Helpers;
 using ContractPortal.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,7 @@ public class BinaryController : ControllerBase
         _logger.LogInformation(KVSERVER_BASE_PATH);
     }
 
+    [Authorize]
     [HttpGet]
     [ActionName("List")]
     public async Task<IEnumerable<KVStatus>> List()
@@ -78,6 +80,7 @@ public class BinaryController : ControllerBase
         return list;
     }
 
+    [Authorize]
     [HttpPost]
     [ActionName("Upload")]
     public async Task<IActionResult> Upload([FromForm] Upload binary)

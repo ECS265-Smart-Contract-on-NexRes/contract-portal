@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using ContractPortal.Helpers;
 using ContractPortal.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,11 +16,11 @@ namespace ContractPortal.Controllers;
 public class BalanceController : ControllerBase
 {
     string PYTHON_BASE_PATH =
-    #if DEBUG
-    "/home/siyuanliu/repos/contract-portal/contractServer"
-    #else
+#if DEBUG
+    "/home/siyuanliu/repos/contract-portal/contractServer";
+#else
     "/home/azureuser/contract-portal/contractServer";
-    #endif
+#endif
     private readonly ILogger<BalanceController> _logger;
 
     public BalanceController(ILogger<BalanceController> logger,
@@ -28,7 +29,8 @@ public class BalanceController : ControllerBase
         _logger = logger;
         _logger.LogInformation(PYTHON_BASE_PATH);
     }
-    
+
+    [Authorize]
     [HttpGet]
     [ActionName("Get")]
     public async Task<string> Get()
@@ -64,6 +66,7 @@ public class BalanceController : ControllerBase
         return null;
     }
 
+    [Authorize]
     [HttpPost]
     [ActionName("Update")]
     [Route("{add}")]
