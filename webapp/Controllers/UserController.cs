@@ -6,7 +6,7 @@ using ContractPortal.Models;
 using ContractPortal.Services;
 
 [ApiController]
-[Route("api/binary/{action}")]
+[Route("api/User/{action}")]
 public class UsersController : ControllerBase
 {
     private IUserService _userService;
