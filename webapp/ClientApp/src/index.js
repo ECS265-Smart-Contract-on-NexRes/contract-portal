@@ -6,13 +6,14 @@ import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 import { RecoilRoot } from 'recoil';
+import { history } from './_helpers/history'
 
 const baseUrl = document.getElementsByTagName('base')[0].getAttribute('href');
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
 
 root.render(
-  <BrowserRouter basename={baseUrl}>
+  <BrowserRouter basename={baseUrl} history={history}>
     <React.StrictMode>
       <RecoilRoot>
         <App />

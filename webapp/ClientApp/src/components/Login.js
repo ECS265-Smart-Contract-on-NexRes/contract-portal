@@ -6,19 +6,23 @@ import { useRecoilValue } from 'recoil';
 
 import { authAtom } from '../_state';
 import { useUserActions } from '../_actions';
+import { history } from '../_helpers/history';
 
 export { Login };
 
-function Login({ history }) {
+function Login() {
     const auth = useRecoilValue(authAtom);
     const userActions = useUserActions();
 
     useEffect(() => {
         // redirect to home if already logged in
-        if (auth) history.push('/');
+        if (auth) {
+            history.push('/');
+            history.go('/');
+        }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [auth]);
 
     // form validation rules 
     const validationSchema = Yup.object().shape({
