@@ -6,7 +6,7 @@ import { authAtom, usersAtom } from '../_state';
 export { useUserActions };
 
 function useUserActions () {
-    const baseUrl = `${process.env.REACT_APP_API_URL}/users`;
+    const baseUrl = `api/users`;
     const fetchWrapper = useFetchWrapper();
     const setAuth = useSetRecoilState(authAtom);
     const setUsers = useSetRecoilState(usersAtom);
