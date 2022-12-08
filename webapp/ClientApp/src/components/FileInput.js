@@ -7,12 +7,14 @@ import {
     Button,
     Alert
 } from 'reactstrap';
+import { useFetchWrapper } from '../_helpers/fetchWrapper';
 
 export const FileInput = () => {
     const [name, setName] = useState('');
     const [body, setBody] = useState('');
     const [showSuccessAlert, setSuccessAlert] = useState(false);
     const [showFailureAlert, setFailureAlert] = useState(false);
+    const fetchWrapper = useFetchWrapper();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,7 +23,7 @@ export const FileInput = () => {
         data.append('body', body);
         data.append('name', name);
 
-        fetch('api/binary/upload', {
+        fetchWrapper.post('api/binary/upload', null, {
             method: 'POST',
             headers: {
                 'enctype': 'multipart/form-data'
