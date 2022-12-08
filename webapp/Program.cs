@@ -6,7 +6,7 @@ using WebApi.Helpers;
 var builder = WebApplication.CreateBuilder(args);
 string port = Environment.GetEnvironmentVariable("PORT");
 // Hardcoded for demo purpose
-string JWT_SECRET_KEY = "jwt_secret_key";
+string JWT_SECRET_KEY = "contract_portal_web_jwt_secret_key";
 
 
 Process process = new Process

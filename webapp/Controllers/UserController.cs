@@ -6,7 +6,6 @@ using ContractPortal.Models;
 using ContractPortal.Services;
 
 [ApiController]
-[Route("api/User/{action}")]
 public class UsersController : ControllerBase
 {
     private IUserService _userService;
@@ -17,8 +16,8 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    [ActionName("Authenticate")]
-    public IActionResult Authenticate(AuthenticateRequest model)
+    [Route("api/user/login")]
+    public IActionResult Login(AuthenticateRequest model)
     {
         var response = _userService.Authenticate(model);
 

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Nav, TabContent, TabPane, Row, Col, Card, CardText, CardTitle, Button, Container } from 'reactstrap';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import './NavMenu.css';
 import {classnames} from 'classnames';
 
@@ -34,7 +34,7 @@ export class NavMenu extends Component {
     return (
       <div>
         <header>
-          <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
+          <Navbar className="navbar navbar-expand navbar-dark bg-dark" container light>
             <NavbarBrand tag={Link} to="/">Contract Portal</NavbarBrand>
             <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
             <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
@@ -68,6 +68,7 @@ export class NavMenu extends Component {
           <TabContent activeTab="1">
           </TabContent>
         </Container>
+        <Outlet />
       </div>
     );
   }

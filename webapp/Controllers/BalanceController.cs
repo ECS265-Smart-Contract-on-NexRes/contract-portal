@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 namespace ContractPortal.Controllers;
 
 [ApiController]
-[Route("api/balance/{action}")]
 public class BalanceController : ControllerBase
 {
     string PYTHON_BASE_PATH =
@@ -32,7 +31,7 @@ public class BalanceController : ControllerBase
 
     [Authorize]
     [HttpGet]
-    [ActionName("Get")]
+    [Route("api/balance/get")]
     public async Task<string> Get()
     {
         var psi = new ProcessStartInfo
@@ -68,8 +67,7 @@ public class BalanceController : ControllerBase
 
     [Authorize]
     [HttpPost]
-    [ActionName("Update")]
-    [Route("{add}")]
+    [Route("api/balance/update")]
     public async Task Update(string add)
     {
         var psi = new ProcessStartInfo

@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 namespace ContractPortal.Controllers;
 
 [ApiController]
-[Route("api/binary/{action}")]
 public class BinaryController : ControllerBase
 {
     static readonly Dictionary<Guid, KVStatus> _dictionary = new Dictionary<Guid, KVStatus>();
@@ -31,7 +30,7 @@ public class BinaryController : ControllerBase
 
     [Authorize]
     [HttpGet]
-    [ActionName("List")]
+    [Route("api/binary/list")]
     public async Task<IEnumerable<KVStatus>> List()
     {
         var list = new List<KVStatus>();
@@ -39,8 +38,6 @@ public class BinaryController : ControllerBase
         {
             if (!_dictionary[guid].IsPublished)
             {
-#if DEBUG
-#else
                 var psi = new ProcessStartInfo
                 {
                     FileName = $"{KVSERVER_BASE_PATH}/bazel-bin/example/kv_server_tools",
@@ -73,7 +70,6 @@ public class BinaryController : ControllerBase
                         }
                     }
                 }
-#endif
             }
             list.Add(_dictionary[guid]);
         }
@@ -82,7 +78,7 @@ public class BinaryController : ControllerBase
 
     [Authorize]
     [HttpPost]
-    [ActionName("Upload")]
+    [Route("api/binary/upload")]
     public async Task<IActionResult> Upload([FromForm] Upload binary)
     {
         var formFile = binary.Body;
@@ -102,8 +98,6 @@ public class BinaryController : ControllerBase
         resultStr = resultStr.Replace("\"", "\"\"");
         var guid = Guid.NewGuid();
 
-#if DEBUG
-#else
         var psi = new ProcessStartInfo
         {
             FileName = $"{KVSERVER_BASE_PATH}/bazel-bin/example/kv_server_tools",
@@ -121,7 +115,6 @@ public class BinaryController : ControllerBase
 
         proc.Start();
         await proc.WaitForExitAsync();
-#endif
 
         _dictionary[guid] = new KVStatus
         {
