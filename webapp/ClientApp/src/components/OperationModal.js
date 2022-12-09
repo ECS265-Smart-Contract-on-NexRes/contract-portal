@@ -1,97 +1,83 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, Card, CardBody, Spinner, Input, CardFooter, CardHeader, Container, Row, Col, FormGroup } from 'reactstrap';
 import { CopyBlock } from "react-code-blocks"
+import { useFetchWrapper } from "../_helpers/fetchWrapper"
 
-class OperationModal extends React.Component {
-  constructor(props) {
-    super(props);
-    this.toggle = this.toggle.bind(this);
-    this.isOpen = this.isOpen.bind(this);
-    this.state = { balance: null, add: 0 };
-  }
+export default function OperationModal(props) {
+  const fetchWrapper = useFetchWrapper();
+  const [balance, setBalance] = useState(null);
+  const [addVal, setAddVal] = useState(0);
 
-  toggle() {
-    this.props.undo();
-  }
-
-  isOpen() {
-    return this.props.selectedKey === this.props.kvStatus.key
-  }
-
-  render() {
-    return (
-
-      <Modal size="lg" isOpen={this.isOpen()} toggle={this.toggle} className={this.props.className}>
-        <ModalHeader toggle={this.toggle}>{this.props.kvStatus.name}</ModalHeader>
-        <ModalBody>
-          <Container>
-            <Row>
-              <Col md="12" lg="8">
-                <CopyBlock
-                  text={this.props.kvStatus.content ? this.props.kvStatus.content : ""}
-                  language="javascript"
-                  showLineNumbers={false}
-                  theme="dracula"
-                />
-              </Col>
-              <Col md="12" lg="4">
-                <Card
-                  className="my-2">
-                  <CardHeader>
-                    User Balance
-                  </CardHeader>
-                  <CardBody>
-                    {this.state.balance == null ? <Spinner color="primary">
-                      Loading...
-                    </Spinner> : this.state.balance
-                    }
-                  </CardBody>
-                  <CardFooter>
-                    <FormGroup>
-                      <Input
-                        onChange={(e) => {
-                          this.setState({ ...this.state, add: e.target.value })
-                        }}
-                      />
-                    </FormGroup>
-                    <Button onClick={() => {
-                      this.updateBalance(this.state.add);}}>Add</Button>
-                  </CardFooter>
-                </Card>
-              </Col>
-            </Row>
-          </Container>
-        </ModalBody>
-      </Modal>
-
-    );
-  }
-
-  componentDidMount() {
-    this.getBalance();
-  }
-
-  async getBalance() {
-    const response = await fetch('api/balance/get');
+  const getBalance = async function () {
+    const response = await fetchWrapper.get('api/balance/get');
     const data = await response.json();
-    this.setState({ balance: data });
+    setBalance(data);
   }
 
-  async updateBalance(add) {
-    const response = await fetch(`api/balance/update/${add}`, {
-      method: 'POST'
-    }).then((res) => {
-      if (!res.ok) {
-        // make the promise be rejected if we didn't get a 2xx response
-        throw new Error("Not 2xx response", { cause: res });
-      }
-    })
-    .then(this.getBalance.bind(this))
-    .catch((e) => {
-      console.log(`Update balance failed`); 
-    });
+  useEffect(() => {
+    getBalance();});
+
+  const toggle = function () {
+    props.undo();
   }
+
+  const isOpen = function () {
+    return props.selectedKey === props.kvStatus.key
+  }
+
+
+  const updateBalance = async function (add) {
+    const response = await fetchWrapper.post(`api/balance/update/${add}`)
+      .then(getBalance)
+      .catch((e) => {
+        console.log(`Update balance failed`);
+      });
+  }
+
+  return (
+    <Modal size="lg" isOpen={isOpen()} toggle={toggle} className={props.className}>
+      <ModalHeader toggle={toggle}>{props.kvStatus.name}</ModalHeader>
+      <ModalBody>
+        <Container>
+          <Row>
+            <Col md="12" lg="8">
+              <CopyBlock
+                text={props.kvStatus.content ? props.kvStatus.content : ""}
+                language="javascript"
+                showLineNumbers={false}
+                theme="dracula"
+              />
+            </Col>
+            <Col md="12" lg="4">
+              <Card
+                className="my-2">
+                <CardHeader>
+                  User Balance
+                </CardHeader>
+                <CardBody>
+                  {balance == null ? <Spinner color="primary">
+                    Loading...
+                  </Spinner> : balance
+                  }
+                </CardBody>
+                <CardFooter>
+                  <FormGroup>
+                    <Input
+                      onChange={(e) => {
+                        setAddVal(e.target.value)
+                      }}
+                    />
+                  </FormGroup>
+                  <Button onClick={() => {
+                    updateBalance(addVal);
+                  }}>Add</Button>
+                </CardFooter>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </ModalBody>
+    </Modal>
+  );
 }
-
-export default OperationModal;
