@@ -31,10 +31,6 @@ export const FileInput = () => {
             body: data
         })
             .then((res) => {
-                if (!res.ok) {
-                    // make the promise be rejected if we didn't get a 2xx response
-                    throw new Error("Not 2xx response", { cause: res });
-                }
                 console.log(`binary named '${name}' uploaded successfully`);
                 setSuccessAlert(true);
             }).catch((e) => {
