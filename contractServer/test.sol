@@ -1,7 +1,6 @@
 pragma solidity ^0.6.6;
 contract Vault {
     uint vaultData;
-    uint money;
     function set(uint data) public{
         vaultData = data;
     }
