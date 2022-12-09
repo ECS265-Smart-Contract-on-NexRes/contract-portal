@@ -8,27 +8,27 @@ from Crypto.PublicKey import RSA
 
 
 def signing(key, msg):
-    data = msg.encode("utf-8")  # 将字符串转换成bytes对象
+    data = msg.encode("utf-8") 
 
     rsa_key = RSA.importKey(key)
     sign = PKCS1_v1_5.new(rsa_key)
 
-    sha_data = SHA256.new(data)  # 签名算法使用SHA256，需根据业务要求进行调整
+    sha_data = SHA256.new(data)  
 
-    sign_data = sign.sign(sha_data)  # 签名
+    sign_data = sign.sign(sha_data) 
 
-    result = base64.b64encode(sign_data)  # 将签名后的内容，转换为base64编码
-    result = result.decode("utf-8")  # 签名结果转换成字符串
+    result = base64.b64encode(sign_data) 
+    result = result.decode("utf-8")  
     return result
 
 
-client = socket.socket()  # 生成socket连接对象
+client = socket.socket() 
 
-ip_port = ("localhost", 6900)  # 地址和端口号
+ip_port = ("localhost", 6900) 
 
-client.connect(ip_port)  # 连接
+client.connect(ip_port) 
 
-print("服务器已连接")
+print("Server connected")
 
 sol_file_name = "test.sol"
 func_name, para, contract_id, user_id = 'add', [50], 1001, '0001'

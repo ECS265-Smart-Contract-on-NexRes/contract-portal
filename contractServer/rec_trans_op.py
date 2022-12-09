@@ -11,25 +11,25 @@ from Crypto.PublicKey import RSA
 
 # check signature
 def verifying(key, signature, msg):
-    signature = base64.b64decode(signature)  # base64解码
+    signature = base64.b64decode(signature)  # base64 encoding
     data = msg.encode("utf-8")
     rsa_key = RSA.importKey(key)
     sign = PKCS1_v1_5.new(rsa_key)
-    sha_data = SHA256.new(data)  # 与签名时使用的算法相同
+    sha_data = SHA256.new(data)  
     result = sign.verify(sha_data, signature)
     return result
 
 
-def split_function(filepath):  # filepath:输入需要处理的文件路径
+def split_function(filepath):  
     f = open(filepath, 'r')
     lines = f.readlines()
     f.close()
-    flag = -1  # 作为二维数组下标使用
+    flag = -1  
     startinit = 0
     init = {}
     function_list = {}
     for line in lines:
-        text = line.strip()  # strip是trim掉字符串两边的空格。
+        text = line.strip() 
         if len(text) > 0 and text != "\n":
             # phrase init
             if text.split()[0] == "contract":
@@ -97,28 +97,28 @@ def try_transaction(user_id, func, input_para, func_list, init_para,
 
 server = socket.socket()
 
-server.bind(("", 6900))  # 绑定监听端口
+server.bind(("", 6900))  
 
-server.listen(5)  # 监听
+server.listen(5)  # Listen to port
 
-print("监听开始..")
+print("Listen to port..")
 
 while True:
-    conn, addr = server.accept()  # 等待连接
+    conn, addr = server.accept()  # Wait for connection
 
-    print("conn:", conn, "\naddr:", addr)  # conn连接实例
+    print("conn:", conn, "\naddr:", addr)  
 
     while True:
-        data = conn.recv(4096)  # 接收
-        if not data:  # 客户端已断开
-            print("客户端断开连接")
+        data = conn.recv(4096)  
+        if not data:  
+            print("Disconnect")
             break
 
         data = json.loads(data.decode("utf-8"))
         print
         user_id, sol_file, func_name, para, contract_id, signature = data[
             0], data[1], data[2], data[3], data[4], data[5]
-        print("收到的命令：", data, type(data))
+        print("Receive command：", data, type(data))
 
         db_con = sqlite3.connect("transcation.db")
         cur = db_con.cursor()
