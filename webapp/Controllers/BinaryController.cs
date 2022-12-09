@@ -16,7 +16,7 @@ public class BinaryController : ControllerBase
 {
     static readonly Dictionary<Guid, KVStatus> _dictionary = new Dictionary<Guid, KVStatus>();
     Process _process;
-    string KVSERVER_BASE_PATH = "/home/azureuser/resilientdb";
+    string KVSERVER_BASE_PATH = "/home/sssiu/resilientdb";
 
     private readonly ILogger<BinaryController> _logger;
 

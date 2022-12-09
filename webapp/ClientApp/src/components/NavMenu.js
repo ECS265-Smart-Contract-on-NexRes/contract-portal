@@ -1,75 +1,47 @@
-import React, { Component } from 'react';
-import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Nav, TabContent, TabPane, Row, Col, Card, CardText, CardTitle, Button, Container } from 'reactstrap';
+import React, { useEffect, useState } from 'react';
+import { Navbar, NavbarBrand, NavItem, NavLink, Nav, TabContent, Container } from 'reactstrap';
 import { Link, Outlet } from 'react-router-dom';
 import './NavMenu.css';
-import {classnames} from 'classnames';
 
-export class NavMenu extends Component {
-  static displayName = NavMenu.name;
+export function NavMenu() {
+  const [activeTab, setActiveTab] = useState(window.location.pathname);
 
-  constructor(props) {
-    super(props);
-
-    this.toggleNavbar = this.toggleNavbar.bind(this);
-    this.state = {
-      collapsed: true,
-      activeTab: '1'
-    };
-    this.toggle = this.toggle.bind(this);
-  }
-
-  toggleNavbar() {
-    this.setState({
-      collapsed: !this.state.collapsed
-    });
-  }
-
-  toggle(tab) {
-    if (this.state.activeTab !== tab) {
-      this.setState({ activeTab: tab });
+  const toggle = function (tab) {
+    if (activeTab != tab) {
+      setActiveTab(tab);
     }
   }
 
-  render() {
-    return (
-      <div>
-        <header>
-          <Navbar className="navbar navbar-expand navbar-dark bg-dark" container light>
-            <NavbarBrand tag={Link} to="/">Contract Portal</NavbarBrand>
-            <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
-            <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
-              <ul className="navbar-nav flex-grow">
-                <NavItem>
-                  
-                </NavItem>
-              </ul>
-            </Collapse>
-          </Navbar>
-        </header>
-        <Container>
-          <Nav tabs>
-            <NavItem>
-              <NavLink tag={Link} 
-                className={this.state.activeTab === '1' ? 'active' : ''}
-                to="/" 
-                onClick={() => { this.toggle('1'); }}>
-                View
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink tag={Link} 
-                className={this.state.activeTab === '2' ? 'active' : ''}
-                to="/upload" 
-                onClick={() => { this.toggle('2'); }}>
-                Upload
-              </NavLink>
-            </NavItem>
-          </Nav>
-          <TabContent activeTab="1">
-          </TabContent>
-        </Container>
-        <Outlet />
-      </div>
-    );
-  }
+  return (
+    <div>
+      <header>
+        <Navbar className="navbar navbar-expand navbar-dark bg-dark" container light>
+          <NavbarBrand tag={Link} to="/">Contract Portal</NavbarBrand>
+        </Navbar>
+      </header>
+      <Container>
+        <Nav tabs>
+          <NavItem>
+            <NavLink tag={Link}
+              className={activeTab === "/" ? 'active' : ''}
+              to="/"
+              onClick={() => { this.toggle('/'); }}>
+              View
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink tag={Link}
+              className={activeTab === "/upload" ? 'active' : ''}
+              to="/upload"
+              onClick={() => { this.toggle('/upload'); }}>
+              Upload
+            </NavLink>
+          </NavItem>
+        </Nav>
+        <TabContent activeTab="1">
+        </TabContent>
+      </Container>
+      <Outlet />
+    </div>
+  );
 }
