@@ -2,12 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using ContractPortal.Helpers;
 using ContractPortal.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SockNet.ClientSocket;
 
 namespace ContractPortal.Controllers;
 
@@ -32,7 +36,7 @@ public class BalanceController : ControllerBase
     [Authorize]
     [HttpGet]
     [Route("api/balance/get")]
-    public async Task<string> Get()
+    public async Task<string> Get(string contractId)
     {
         var context = HttpContext;
         var user = (User)HttpContext.Items["User"];
@@ -65,6 +69,27 @@ public class BalanceController : ControllerBase
                 return output;
             }
         }
+
+        var client = new SocketClient("127.0.0.1", 6900);
+
+        var input = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\"]";
+        var privateKey = user.PrivateKey;
+        var signature = Signing(input, privateKey);
+
+        var signedInput = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\", \"${signature}]\"";
+        string recData = null;
+        if (await client.Connect())
+        {
+            await client.Send(signedInput);
+            byte[] bytes = await client.ReceiveBytes();
+            if (bytes != null)
+                recData = bytes.ToString();
+
+            _logger.LogInformation($"receive replay from server: {recData}");
+        }
+
+
+
         return null;
     }
 
@@ -93,5 +118,29 @@ public class BalanceController : ControllerBase
 
         proc.Start();
         await proc.WaitForExitAsync();
+    }
+
+    public static string Signing(string key, string msg)
+    {
+        // Encode the message using UTF-8
+        var data = Encoding.UTF8.GetBytes(msg);
+
+        // Import the RSA key
+        var rsa = new RSACryptoServiceProvider();
+        rsa.ImportFromPem(key);
+
+        // Create a PKCS#1 v1.5 signature
+        var signer = new RSAPKCS1SignatureFormatter(rsa);
+        signer.SetHashAlgorithm("SHA256");
+
+        // Compute the SHA-256 hash of the data
+        var sha256 = SHA256.Create();
+        var hash = sha256.ComputeHash(data);
+
+        // Sign the hash
+        var signature = signer.CreateSignature(hash);
+
+        // Return the signature as a base64-encoded string
+        return Convert.ToBase64String(signature);
     }
 }
