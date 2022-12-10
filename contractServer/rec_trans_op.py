@@ -93,6 +93,8 @@ def try_transaction(user_id, func, input_para, func_list, init_para,
     cur.execute("INSERT INTO transcation VALUES ('" + str(user_id) + "','" +
                 str(contract_id) + "','" + str(op_time) + "','" + operation +
                 "','" + str(success) + "')")
+    if func == "get":
+        return init_para['vaultData'] 
 
 
 server = socket.socket()
@@ -113,8 +115,9 @@ while True:
         if not data:  
             print("Disconnect")
             break
-
-        data = json.loads(data.decode("utf-8"))
+        
+        decodedData = data.decode("utf-8")
+        data = json.loads(decodedData)
         print
         user_id, sol_file, func_name, para, contract_id, signature = data[
             0], data[1], data[2], data[3], data[4], data[5]
@@ -136,9 +139,10 @@ while True:
                 for inpu in range(len(func['inputs'])):
                     input_para[func['inputs'][inpu]['name']] = para[inpu]
 
-        try_transaction(user_id, func_name, input_para, func_list, init_para,
+        result = try_transaction(user_id, func_name, input_para, func_list, init_para,
                         contract_id,
                         [data[0], data[1], data[2], data[3], data[4]], data[5])
         db_con.commit()
         cur.close()
+        conn.sendall(bytes(result.encode("utf-8")))
 server.close()

@@ -25,7 +25,8 @@ process.Start();
 
 // Add services to the container.
 builder.Services.AddSingleton<Process>(process);
-builder.Services.AddSingleton<SocketClient>(new SocketClient("127.0.0.1", 6900));
+var socketClient = new SocketClient("127.0.0.1", 6900) ;
+builder.Services.AddSingleton<SocketClient>(socketClient);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors();

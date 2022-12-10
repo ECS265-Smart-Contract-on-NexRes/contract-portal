@@ -1,5 +1,5 @@
 import React, { Component, useEffect, useState } from 'react';
-import { Button } from 'reactstrap';
+import { Button, Container } from 'reactstrap';
 import OperationModal from './OperationModal';
 import { useFetchWrapper } from '../_helpers/fetchWrapper';
 
@@ -57,11 +57,11 @@ export function Home() {
 
 
   return (
-    <div>
+    <Container>
       <h1 id="tabelLabel" >Smart Contracts</h1>
       {loading
         ? <p><em>Loading...</em></p>
         : renderBinariesTable(kvStatus)}
-    </div>
+    </Container>
   );
 }

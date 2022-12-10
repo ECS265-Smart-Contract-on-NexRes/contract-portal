@@ -9,14 +9,15 @@ export default function OperationModal(props) {
   const [balance, setBalance] = useState(null);
   const [addVal, setAddVal] = useState(0);
 
-  const getBalance = async function () {
-    const response = await fetchWrapper.get('api/balance/get');
-    const data = await response.json();
-    setBalance(data);
+  const getBalance = function () {
+    fetchWrapper.get('api/balance/get')
+      .then((res) => { 
+        setBalance(res);
+      })
   }
 
   useEffect(() => {
-    getBalance();});
+    getBalance();}, []);
 
   const toggle = function () {
     props.undo();

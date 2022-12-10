@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Container } from 'reactstrap';
 import { FileInput } from './FileInput';
 
 export class Upload extends Component {
@@ -6,10 +7,10 @@ export class Upload extends Component {
 
   render() {
     return (
-      <div>
+      <Container>
         <h1>Upload a smart contract</h1>
         <FileInput></FileInput>
-      </div>
+      </Container>
     );
   }
 }

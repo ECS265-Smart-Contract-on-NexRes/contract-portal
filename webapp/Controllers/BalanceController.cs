@@ -48,7 +48,7 @@ public class BalanceController : ControllerBase
         var privateKey = user.PrivateKey;
         var signature = Signing(privateKey, input);
 
-        var signedInput = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\", \"${signature}]\"";
+        var signedInput = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\", \"${signature}\"]";
 
         _logger.LogInformation($"signedInput: {signedInput}");
 
@@ -57,13 +57,14 @@ public class BalanceController : ControllerBase
         {
             await _client.Send(Encoding.Default.GetBytes(signedInput));
             byte[] bytes = await _client.ReceiveBytes();
+            _client.Disconnect();
             if (bytes != null)
-                recData = bytes.ToString();
+                recData = System.Text.Encoding.UTF8.GetString(bytes);
 
             _logger.LogInformation($"receive replay from server: {recData}");
         }
 
-        return null;
+        return recData;
     }
 
     [Authorize]

@@ -19,7 +19,7 @@ export function NavMenu() {
           <NavbarBrand tag={Link} to="/">Contract Portal</NavbarBrand>
         </Navbar>
       </header>
-      <Container>
+      <Container style={{marginTop: '20px'}}>
         <Nav tabs>
           <NavItem>
             <NavLink tag={Link}
