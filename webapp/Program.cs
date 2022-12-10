@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using ContractPortal;
 using ContractPortal.Services;
+using SockNet.ClientSocket;
 using WebApi.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,7 @@ process.Start();
 
 // Add services to the container.
 builder.Services.AddSingleton<Process>(process);
+builder.Services.AddSingleton<SocketClient>(new SocketClient("127.0.0.1", 6900));
 builder.Services.AddControllersWithViews();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors();

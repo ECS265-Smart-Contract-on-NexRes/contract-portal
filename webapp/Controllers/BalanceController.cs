@@ -25,10 +25,13 @@ public class BalanceController : ControllerBase
     "/home/sssiu/contract-portal/contractServer";
 #endif
     private readonly ILogger<BalanceController> _logger;
+    SocketClient _client;
 
     public BalanceController(ILogger<BalanceController> logger,
-                            Process process)
+                            Process process, 
+                            SocketClient client)
     {
+        _client = client;
         _logger = logger;
         _logger.LogInformation(PYTHON_BASE_PATH);
     }
@@ -36,59 +39,29 @@ public class BalanceController : ControllerBase
     [Authorize]
     [HttpGet]
     [Route("api/balance/get")]
-    public async Task<string> Get(string contractId)
+    public async Task<string> Get()
     {
         var context = HttpContext;
         var user = (User)HttpContext.Items["User"];
 
-        var psi = new ProcessStartInfo
-        {
-            FileName = $"python3",
-            Arguments = $"{PYTHON_BASE_PATH}/trans_op_meow.py \"{user.PrivateKey}\" get 0 {user.Id}",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-        _logger.LogInformation(psi.Arguments);
-
-        var proc = new Process
-        {
-            StartInfo = psi
-        };
-
-        proc.Start();
-        await proc.WaitForExitAsync();
-        using (System.IO.StreamReader myOutput = proc.StandardOutput)
-        {
-            var output = new string(myOutput.ReadToEnd().Where(c => char.IsDigit(c)).ToArray());
-            _logger.LogInformation($"Get balance: {output}");
-            if (output != null &&
-                output.Length > 0)
-            {
-                _logger.LogInformation($"Get balance: {output}");
-                return output;
-            }
-        }
-
-        var client = new SocketClient("127.0.0.1", 6900);
-
         var input = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\"]";
         var privateKey = user.PrivateKey;
-        var signature = Signing(input, privateKey);
+        var signature = Signing(privateKey, input);
 
         var signedInput = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\", \"${signature}]\"";
+
+        _logger.LogInformation($"signedInput: {signedInput}");
+
         string recData = null;
-        if (await client.Connect())
+        if (await _client.Connect())
         {
-            await client.Send(signedInput);
-            byte[] bytes = await client.ReceiveBytes();
+            await _client.Send(Encoding.Default.GetBytes(signedInput));
+            byte[] bytes = await _client.ReceiveBytes();
             if (bytes != null)
                 recData = bytes.ToString();
 
             _logger.LogInformation($"receive replay from server: {recData}");
         }
-
-
 
         return null;
     }
