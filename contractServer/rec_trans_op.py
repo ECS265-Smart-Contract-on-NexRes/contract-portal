@@ -116,8 +116,8 @@ while True:
 
         data = json.loads(data.decode("utf-8"))
         print
-        user_id, sol_file, func_name, para, contract_id, signature = data[
-            0], data[1], data[2], data[3], data[4], data[5]
+        user_id, sol_file, func_name, para, contract_id, user_id_to, signature,  = data[
+            0], data[1], data[2], data[3], data[4], data[5], data[6]
         print("Receive command：", data, type(data))
 
         db_con = sqlite3.connect("transcation.db")
@@ -137,8 +137,8 @@ while True:
                     input_para[func['inputs'][inpu]['name']] = para[inpu]
 
         try_transaction(user_id, func_name, input_para, func_list, init_para,
-                        contract_id,
-                        [data[0], data[1], data[2], data[3], data[4]], data[5])
+                        contract_id, 
+                        [data[0], data[1], data[2], data[3], data[4], data[5]], data[6])
         db_con.commit()
         cur.close()
 server.close()

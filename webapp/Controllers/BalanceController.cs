@@ -18,7 +18,7 @@ public class BalanceController : ControllerBase
 #if DEBUG
     "/home/siyuanliu/repos/contract-portal/contractServer";
 #else
-    "/home/azureuser/contract-portal/contractServer";
+    "/home/sssiu/contract-portal/contractServer";
 #endif
     private readonly ILogger<BalanceController> _logger;
 
@@ -34,15 +34,18 @@ public class BalanceController : ControllerBase
     [Route("api/balance/get")]
     public async Task<string> Get()
     {
+        var context = HttpContext;
+        var user = (User)HttpContext.Items["User"];
+
         var psi = new ProcessStartInfo
         {
             FileName = $"python3",
-            Arguments = $"{PYTHON_BASE_PATH}/getBalance.py",
+            Arguments = $"{PYTHON_BASE_PATH}/trans_op_meow.py \"{user.PrivateKey}\" get 0 {user.Id}",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
-        _logger.LogInformation($"{PYTHON_BASE_PATH}/getBalance.py");
+        _logger.LogInformation(psi.Arguments);
 
         var proc = new Process
         {
@@ -70,6 +73,9 @@ public class BalanceController : ControllerBase
     [Route("api/balance/update")]
     public async Task Update(string add)
     {
+        var context = HttpContext;
+        var user = (User)HttpContext.Items["User"];
+
         var psi = new ProcessStartInfo
         {
             FileName = $"python3",
