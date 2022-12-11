@@ -12,4 +12,5 @@ public class User
     public string Password { get; set; }
 
     public string PrivateKey { get; set; }
+    public string PublicKey {get; set;}
 }

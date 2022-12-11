@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ContractPortal.Helpers;
 using ContractPortal.Models;
+using ContractPortal.Models.KVServerInput;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +16,7 @@ namespace ContractPortal.Controllers;
 [ApiController]
 public class BinaryController : ControllerBase
 {
-    static readonly Dictionary<Guid, KVStatus> _dictionary = new Dictionary<Guid, KVStatus>();
+    static readonly Dictionary<Guid, ContractStatus> _dictionary = new Dictionary<Guid, ContractStatus>();
     Process _process;
     string KVSERVER_BASE_PATH = "/home/sssiu/resilientdb";
 
@@ -31,11 +33,14 @@ public class BinaryController : ControllerBase
     [Authorize]
     [HttpGet]
     [Route("api/binary/list")]
-    public async Task<IEnumerable<KVStatus>> List()
+    public async Task<IEnumerable<ContractStatus>> List()
     {
-        var list = new List<KVStatus>();
+        var list = new List<ContractStatus>();
+        var user = (User)HttpContext.Items["User"];
+
         foreach (var guid in _dictionary.Keys)
         {
+            // query kvserver if the contract previously not published yet
             if (!_dictionary[guid].IsPublished)
             {
                 var psi = new ProcessStartInfo
@@ -65,13 +70,21 @@ public class BinaryController : ControllerBase
                         if (val.Length >= 2 &&
                             val[1].Trim().Length > 0)
                         {
+                            var contractInputWithSignature = JsonSerializer.Deserialize<InputWithSignature<ContractInput>>(val[1].Trim());
+                            _logger.LogInformation($"after deserialization, the signature is: {contractInputWithSignature.Signature}");
+                            _logger.LogInformation($"Signature match: {contractInputWithSignature.Signature == _dictionary[guid].Signature}");
+                            _dictionary[guid].Content = contractInputWithSignature.Input.ContractContent;
                             _dictionary[guid].IsPublished = true;
-                            _dictionary[guid].Content = val[1].Trim();
                         }
                     }
                 }
             }
-            list.Add(_dictionary[guid]);
+
+            // Only shows the contracts uploaded by the conrrent logged-in user
+            if (_dictionary[guid].UserId == user.Id)
+            {
+                list.Add(_dictionary[guid]);
+            }
         }
         return list;
     }
@@ -83,6 +96,7 @@ public class BinaryController : ControllerBase
     {
         var formFile = binary.Body;
         var name = binary.Name;
+        var user = (User)HttpContext.Items["User"];
 
         if (formFile.Length <= 0)
         {
@@ -95,18 +109,40 @@ public class BinaryController : ControllerBase
             resultStr = await reader.ReadToEndAsync();
 
         }
-        resultStr = resultStr.Replace("\"", "\"\"");
+        var contractContent = resultStr.Replace("\"", "\"\"");
+
+        // guid used as contract unique id
         var guid = Guid.NewGuid();
+
+        var input = new ContractInput
+        {
+            UserId = user.Id,
+            ContractId = guid,
+            ContractContent = contractContent
+        };
+
+        // Sign the input with user id and contract unique id
+        // and add the signature as part of the input with signature.
+        var inputSerilized = JsonSerializer.Serialize(input);
+        var signature = Signature.Sign(user.PrivateKey, inputSerilized);
+        _logger.LogInformation($"signature: {signature}");
+        var inputWithSignature = new InputWithSignature<ContractInput>
+        {
+            Signature = signature.Replace("\\", "\\\\"),
+            Input = input
+        };
+        var inputWithSignatureSerialized = JsonSerializer.Serialize(inputWithSignature)
+                                                         .Replace("\"", "\"\"");
 
         var psi = new ProcessStartInfo
         {
             FileName = $"{KVSERVER_BASE_PATH}/bazel-bin/example/kv_server_tools",
-            Arguments = $"{KVSERVER_BASE_PATH}/example/kv_client_config.config set {guid} \"{resultStr}\"",
+            Arguments = $"{KVSERVER_BASE_PATH}/example/kv_client_config.config set {guid} \"{inputWithSignatureSerialized}\"",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
-        _logger.LogInformation($"Arguments: {$"{KVSERVER_BASE_PATH}/example/kv_client_config.config set {guid} \"{resultStr}\""}");
+        _logger.LogInformation($"Arguments: {$"{KVSERVER_BASE_PATH}/example/kv_client_config.config set {guid} \"{inputWithSignatureSerialized}\""}");
 
         var proc = new Process
         {
@@ -116,11 +152,13 @@ public class BinaryController : ControllerBase
         proc.Start();
         await proc.WaitForExitAsync();
 
-        _dictionary[guid] = new KVStatus
+        _dictionary[guid] = new ContractStatus
         {
             Key = guid,
             Name = name,
-            IsPublished = false
+            IsPublished = false,
+            UserId = user.Id,
+            Signature = signature
         };
         return Ok();
     }

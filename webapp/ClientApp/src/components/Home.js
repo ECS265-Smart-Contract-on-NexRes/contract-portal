@@ -2,6 +2,8 @@ import React, { Component, useEffect, useState } from 'react';
 import { Button, Container } from 'reactstrap';
 import OperationModal from './OperationModal';
 import { useFetchWrapper } from '../_helpers/fetchWrapper';
+import { RevolvingDot } from 'react-loader-spinner';
+import { FcOk } from 'react-icons/fc';
 
 export function Home() {
   const displayName = Home.name;
@@ -36,7 +38,7 @@ export function Home() {
             <tr>
               <th>File Name</th>
               <th>Key</th>
-              <th>Status</th>
+              <th style={{textAlign: "center"}}>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -46,7 +48,17 @@ export function Home() {
                 key={item.key}>
                 <td>{item.name}</td>
                 <td>{item.key}</td>
-                <td>{item.isPublished.toString()}</td>
+                <td style={{textAlign: "center"}}>{item.isPublished ?  <FcOk /> : <RevolvingDot
+                  height="30"
+                  width="30"
+                  color="#4fa94d"
+                  secondaryColor=''
+                  ariaLabel="revolving-dot-loading"
+                  radius="5"
+                  wrapperStyle={{}}
+                  wrapperClass=""
+                  visible={true}
+                />}</td>
               </tr>
             )}
           </tbody>
