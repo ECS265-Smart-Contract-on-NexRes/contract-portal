@@ -22,17 +22,21 @@ export const Transfer = function () {
             .get('api/user/list')
             .then((response) => {
                 setUserIds(response);
+                if (response.length > 0) {
+                    setSelectedUserId(response[0].id);
+                }
             });
         fetchWrapper
             .get('api/binary/list')
             .then((response) => {
                 setContracts(response);
+                if (response.length > 0) {
+                    setSelectedContractId(response[0].key);
+                }
             });
     }, []);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
+    const handleSubmit = async () => {
         fetchWrapper.post('api/balance/update', {
             contractId: selectedContractId,
             recipient: selectedUserId,
@@ -53,7 +57,7 @@ export const Transfer = function () {
     return (
         <Container>
             <h1>Transfer</h1>
-            <Form >
+            <Form>
                 <FormGroup>
                     <Label for="recipientSelect">
                         Select a recipient
@@ -62,10 +66,12 @@ export const Transfer = function () {
                         id="recipientSelect"
                         name="recipient"
                         type="select"
+                        on
+                        onChange={(e) => {
+                            setSelectedUserId(e.target.value);}}
                     >
                         {users.map((usr) =>
-                            <option value={`${usr.id}`} key={usr.id}
-                                onChange={(e) => setSelectedUserId(e.target.value)}>
+                            <option value={`${usr.id}`} key={usr.id}>
                                 {`${usr.username}(${usr.id})`}
                             </option>
                         )}
@@ -79,10 +85,11 @@ export const Transfer = function () {
                         id="contractSelect"
                         name="contract"
                         type="select"
+                        onChange={(e) => {
+                            setSelectedContractId(e.target.value);}}
                     >
                         {contracts.map((contract) =>
-                            <option value={`${contract.key}`} key={contract.key}
-                                onChange={(e) => setSelectedContractId(e.target.value)}>
+                            <option value={`${contract.key}`} key={contract.key}>
                                 {`${contract.name}(${contract.key})`}
                             </option>
                         )}
@@ -96,10 +103,13 @@ export const Transfer = function () {
                         id="amount"
                         name="amount"
                         value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
+                        onChange={(e) => {
+                            setAmount(e.target.value);}}
                     />
                 </FormGroup>
-                <Button color="primary">
+                <Button
+                    onClick={() => {handleSubmit()}}
+                    color="primary">
                     Submit
                 </Button>
             </Form>
