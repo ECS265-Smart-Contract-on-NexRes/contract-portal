@@ -8,9 +8,9 @@ public class User
     public string Id { get; set; }
     public string Username { get; set; }
 
+    // Never returns password or private key to the brower
     [JsonIgnore]
     public string Password { get; set; }
-
+    [JsonIgnore]
     public string PrivateKey { get; set; }
-    public string PublicKey {get; set;}
 }

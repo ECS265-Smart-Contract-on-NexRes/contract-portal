@@ -49,12 +49,6 @@ public class BalanceController : OperationController
 
         var inputWithSignatureSerialized = CreateInputWithSignature<TransactionInput>(transactionInput, false);
 
-        //var input = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\"]";
-        //var privateKey = user.PrivateKey;
-        //var signature = Signature.Sign(privateKey, input);
-        //
-        //var signedInput = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\", \"${signature}\"]";
-
         _logger.LogInformation($"signedInput: {inputWithSignatureSerialized}");
 
         ContractServerResponse recData = null;
@@ -72,8 +66,9 @@ public class BalanceController : OperationController
             _logger.LogInformation($"receive replay from server: {recData}");
         }
 
-        if (!recData.Success) {
-            // TODO: ERROR ALERT
+        if (!recData.Success)
+        {
+            throw new Exception(recData.Ret);
         }
         return recData.Ret;
     }
@@ -81,27 +76,65 @@ public class BalanceController : OperationController
     [Authorize]
     [HttpPost]
     [Route("api/balance/update")]
-    public async Task Update(string add)
+    public async Task Update([FromBody] TransactionRequest request)
     {
+        var recipient = request.Recipient;
+        var contractId = request.ContractId;
+        var valStr = request.ValStr;
+
+        var val = int.Parse(valStr);
+        var userBalanceStr = await Get(contractId);
+        int userBalance;
+        if (!int.TryParse(userBalanceStr, out userBalance) ||
+            userBalance - val < 0) {
+            throw new Exception("User does not have enough balance to make the transaciton!");
+        }
+
         var context = HttpContext;
         var user = (User)HttpContext.Items["User"];
+        await Transfer(contractId, recipient, TransactionInputType.Add, valStr);
+        await Transfer(contractId, recipient, TransactionInputType.Minus, valStr);
+    }
 
-        var psi = new ProcessStartInfo
+    private async Task Transfer(Guid contractId, string userId, string method, string val)
+    {
+        var transactionInput = new TransactionInput
         {
-            FileName = $"python3",
-            Arguments = $"{PYTHON_BASE_PATH}/updateBalance.py {add}",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
+            TransactionType = method,
+            UserId = userId,
+            ContractId = contractId,
+            Params = new List<string> { val },
+            TransactionId = Guid.NewGuid(),
         };
-        _logger.LogInformation($"{PYTHON_BASE_PATH}/updateBalance.py {add}");
 
-        var proc = new Process
+        var inputWithSignatureSerialized = CreateInputWithSignature<TransactionInput>(transactionInput, false);
+
+        _logger.LogInformation($"signedInput: {inputWithSignatureSerialized}");
+
+        ContractServerResponse recData = null;
+        string recDataStr = string.Empty;
+        if (await _client.Connect())
         {
-            StartInfo = psi
-        };
+            await _client.Send(Encoding.Default.GetBytes(inputWithSignatureSerialized));
+            byte[] bytes = await _client.ReceiveBytes();
+            _client.Disconnect();
+            if (bytes != null)
+            {
+                recDataStr = System.Text.Encoding.UTF8.GetString(bytes);
+                recData = JsonSerializer.Deserialize<ContractServerResponse>(recDataStr);
+            }
 
-        proc.Start();
-        await proc.WaitForExitAsync();
+            _logger.LogInformation(@$"
+                Contract Id: {contractId}
+                User Id:     {userId}
+                method:      {method}
+                value:       {val}
+                receive replay from server regarding  : {recDataStr}");
+        }
+
+        if (!recData.Success)
+        {
+            throw new Exception(recData.Ret);
+        }
     }
 }

@@ -26,4 +26,13 @@ public class UsersController : ControllerBase
 
         return Ok(response);
     }
+
+    [HttpGet]
+    [Authorize]
+    [Route("api/user/list")]
+    public List<User> List() {
+        return _userService.GetAll()
+            .Where(usr => usr.Id != ((User)HttpContext.Items["User"]).Id)
+            .ToList();
+    }
 }

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using ContractPortal;
 using ContractPortal.Services;
+using Microsoft.AspNetCore.Diagnostics;
 using SockNet.ClientSocket;
 using WebApi.Helpers;
 
@@ -25,7 +26,7 @@ process.Start();
 
 // Add services to the container.
 builder.Services.AddSingleton<Process>(process);
-var socketClient = new SocketClient("127.0.0.1", 6900) ;
+var socketClient = new SocketClient("127.0.0.1", 6900);
 builder.Services.AddSingleton<SocketClient>(socketClient);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSwaggerGen();
@@ -60,6 +61,16 @@ app.UseCors(x => x
 // custom jwt auth middleware
 app.UseMiddleware<JwtMiddleware>();
 
+app.UseExceptionHandler(exceptionHandlerApp =>
+    {
+        exceptionHandlerApp.Run(async context =>
+        {
+            var exceptionHandlerPathFeature =
+                context.Features.Get<IExceptionHandlerPathFeature>();
+
+            await context.Response.WriteAsync(exceptionHandlerPathFeature.Error.Message);
+        });
+    });
 
 app.UseEndpoints(endpoints =>
 {

@@ -26,7 +26,7 @@ export function NavMenu() {
               className={activeTab === "/" ? 'active' : ''}
               to="/"
               onClick={() => { this.toggle('/'); }}>
-              View
+              View contracts
             </NavLink>
           </NavItem>
           <NavItem>
@@ -34,7 +34,15 @@ export function NavMenu() {
               className={activeTab === "/upload" ? 'active' : ''}
               to="/upload"
               onClick={() => { this.toggle('/upload'); }}>
-              Upload
+              Upload a contract
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink tag={Link}
+              className={activeTab === "/transfer" ? 'active' : ''}
+              to="/transfer"
+              onClick={() => { this.toggle('/transfer'); }}>
+              Make a transaction
             </NavLink>
           </NavItem>
         </Nav>
