@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace ContractPortal.Controllers;
 
 [ApiController]
-public class BinaryController : ControllerBase
+public class BinaryController : OperationController
 {
     static readonly Dictionary<Guid, ContractStatus> _dictionary = new Dictionary<Guid, ContractStatus>();
     Process _process;
@@ -23,7 +23,7 @@ public class BinaryController : ControllerBase
     private readonly ILogger<BinaryController> _logger;
 
     public BinaryController(ILogger<BinaryController> logger,
-                            Process process)
+                            Process process) : base(logger)
     {
         _logger = logger;
         _process = process;
@@ -121,18 +121,7 @@ public class BinaryController : ControllerBase
             ContractContent = contractContent
         };
 
-        // Sign the input with user id and contract unique id
-        // and add the signature as part of the input with signature.
-        var inputSerilized = JsonSerializer.Serialize(input);
-        var signature = Signature.Sign(user.PrivateKey, inputSerilized);
-        _logger.LogInformation($"signature: {signature}");
-        var inputWithSignature = new InputWithSignature<ContractInput>
-        {
-            Signature = signature.Replace("\\", "\\\\"),
-            Input = input
-        };
-        var inputWithSignatureSerialized = JsonSerializer.Serialize(inputWithSignature)
-                                                         .Replace("\"", "\"\"");
+        var inputWithSignatureSerialized = CreateInputWithSignature<ContractInput>(input, true);
 
         var psi = new ProcessStartInfo
         {
@@ -157,8 +146,7 @@ public class BinaryController : ControllerBase
             Key = guid,
             Name = name,
             IsPublished = false,
-            UserId = user.Id,
-            Signature = signature
+            UserId = user.Id
         };
         return Ok();
     }

@@ -1,14 +1,16 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using ContractPortal.Helpers;
 using ContractPortal.Models;
+using ContractPortal.Models.KVServerInput;
 using Microsoft.AspNetCore.Mvc;
 using SockNet.ClientSocket;
 
 namespace ContractPortal.Controllers;
 
 [ApiController]
-public class BalanceController : ControllerBase
+public class BalanceController : OperationController
 {
     string PYTHON_BASE_PATH =
 #if DEBUG
@@ -20,8 +22,8 @@ public class BalanceController : ControllerBase
     SocketClient _client;
 
     public BalanceController(ILogger<BalanceController> logger,
-                            Process process, 
-                            SocketClient client)
+                            Process process,
+                            SocketClient client) : base(logger)
     {
         _client = client;
         _logger = logger;
@@ -31,32 +33,49 @@ public class BalanceController : ControllerBase
     [Authorize]
     [HttpGet]
     [Route("api/balance/get")]
-    public async Task<string> Get()
+    public async Task<string> Get(Guid contractId)
     {
         var context = HttpContext;
         var user = (User)HttpContext.Items["User"];
 
-        var input = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\"]";
-        var privateKey = user.PrivateKey;
-        var signature = Signature.Sign(privateKey, input);
+        var transactionInput = new TransactionInput
+        {
+            TransactionType = TransactionInputType.Get,
+            UserId = user.Id,
+            ContractId = contractId,
+            Params = new List<string> { },
+            TransactionId = Guid.NewGuid(),
+        };
 
-        var signedInput = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\", \"${signature}\"]";
+        var inputWithSignatureSerialized = CreateInputWithSignature<TransactionInput>(transactionInput, false);
 
-        _logger.LogInformation($"signedInput: {signedInput}");
+        //var input = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\"]";
+        //var privateKey = user.PrivateKey;
+        //var signature = Signature.Sign(privateKey, input);
+        //
+        //var signedInput = $"[\"{user.Id}\", \"test.sol\", \"get\", [], \"1001\", \"${signature}\"]";
 
-        string recData = null;
+        _logger.LogInformation($"signedInput: {inputWithSignatureSerialized}");
+
+        ContractServerResponse recData = null;
         if (await _client.Connect())
         {
-            await _client.Send(Encoding.Default.GetBytes(signedInput));
+            await _client.Send(Encoding.Default.GetBytes(inputWithSignatureSerialized));
             byte[] bytes = await _client.ReceiveBytes();
             _client.Disconnect();
             if (bytes != null)
-                recData = System.Text.Encoding.UTF8.GetString(bytes);
+            {
+                var recDataStr = System.Text.Encoding.UTF8.GetString(bytes);
+                recData = JsonSerializer.Deserialize<ContractServerResponse>(recDataStr);
+            }
 
             _logger.LogInformation($"receive replay from server: {recData}");
         }
 
-        return recData;
+        if (!recData.Success) {
+            // TODO: ERROR ALERT
+        }
+        return recData.Ret;
     }
 
     [Authorize]

@@ -16,8 +16,6 @@ public class TransactionInput : IInput
     public List<string> Params {get; set;}
     [JsonPropertyName("transactionId")]
     public Guid TransactionId { get; set; }
-    [JsonPropertyName("signature")]
-    public string Signature { get; set; }
 }
 
 public static class TransactionInputType {
