@@ -64,9 +64,11 @@ def try_transaction(user_id, func, input_para, func_list, init_para,
     operation = func
     Nonempty, success = True, False
     print(init_para, type(check_para))
-    check_para = json.dumps(check_para)
+    check_para = json.dumps(check_para, separators=(',', ':'))
     print(pub_key, signature, check_para)
-    if verifying(pub_key, signature, check_para) and func in func_list:
+    if not (verifying(pub_key, signature, check_para)):
+        return {'success': False, 'ret': "Signature verification failed!"}
+    if func in func_list:
         if init_para['vaultData'] == '':
             Nonempty = False
         if func == "set":
@@ -94,7 +96,9 @@ def try_transaction(user_id, func, input_para, func_list, init_para,
                 str(contract_id) + "','" + str(op_time) + "','" + operation +
                 "','" + str(success) + "')")
     if func == "get":
-        return init_para['vaultData'] 
+        return {'success': True, 'ret': init_para['vaultData'] }
+    else:
+        return {success: True}
 
 
 server = socket.socket()
@@ -118,10 +122,18 @@ while True:
         
         decodedData = data.decode("utf-8")
         data = json.loads(decodedData)
+        
         print
-        user_id, sol_file, func_name, para, contract_id, signature = data[
-            0], data[1], data[2], data[3], data[4], data[5]
+        user_id, sol_file, func_name, para, contract_id, signature = \
+            data['input']['userId'], \
+            data['input']['contractId'], \
+            data['input']['transactionType'], \
+            data['input']['params'], \
+            data['input']['transactionId'], \
+            data['signature']
+
         print("Receive command：", data, type(data))
+        sol_file = "test.sol"
 
         db_con = sqlite3.connect("transcation.db")
         cur = db_con.cursor()
@@ -141,8 +153,8 @@ while True:
 
         result = try_transaction(user_id, func_name, input_para, func_list, init_para,
                         contract_id,
-                        [data[0], data[1], data[2], data[3], data[4]], data[5])
+                        data['input'], data['signature'])
         db_con.commit()
         cur.close()
-        conn.sendall(bytes(result.encode("utf-8")))
+        conn.sendall(bytes(json.dumps(result).encode("utf-8")))
 server.close()
