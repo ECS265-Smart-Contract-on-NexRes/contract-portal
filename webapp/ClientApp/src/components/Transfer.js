@@ -99,7 +99,7 @@ export const Transfer = function () {
                         onChange={(e) => setAmount(e.target.value)}
                     />
                 </FormGroup>
-                <Button>
+                <Button color="primary">
                     Submit
                 </Button>
             </Form>

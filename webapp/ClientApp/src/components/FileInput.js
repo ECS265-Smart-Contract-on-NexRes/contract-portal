@@ -67,7 +67,7 @@ export const FileInput = () => {
                         }}
                     />
                 </FormGroup>
-                <Button type="submit">Submit</Button>
+                <Button color="primary" type="submit">Submit</Button>
             </Form>
             <br></br>
             <Alert color="info" isOpen={showSuccessAlert} toggle={onSuccessAlertDismiss}>

@@ -5,9 +5,12 @@ import './NavMenu.css';
 import { useRecoilValue } from 'recoil';
 import { authAtom } from '../_state';
 import { history } from '../_helpers/history';
+import { useFetchWrapper } from '../_helpers';
 
 export function NavMenu() {
   const [activeTab, setActiveTab] = useState(window.location.pathname);
+  const [balance, setBalance] = useState(null);
+  const fetchWrapper = useFetchWrapper();
   const auth = useRecoilValue(authAtom);
 
   const toggle = function (tab) {
@@ -15,6 +18,15 @@ export function NavMenu() {
       setActiveTab(tab);
     }
   }
+
+  const getBalance = function () {
+    fetchWrapper.get('api/balance/get')
+      .then((res) => { 
+        setBalance(res);
+      })
+  }
+
+  useEffect(getBalance, [])
 
   return (
     <div>
@@ -52,7 +64,7 @@ export function NavMenu() {
               </CardText>
               <ListGroup flush>
                 <ListGroupItem>
-                  <b>Your Balance:</ b>
+                  <b>Your Balance:</ b> {balance}
                 </ListGroupItem>
               </ListGroup>
               <CardBody>
