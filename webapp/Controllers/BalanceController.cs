@@ -93,7 +93,7 @@ public class BalanceController : OperationController
         var context = HttpContext;
         var user = (User)HttpContext.Items["User"];
         await Transfer(contractId, recipient, TransactionInputType.Add, valStr);
-        await Transfer(contractId, recipient, TransactionInputType.Minus, valStr);
+        await Transfer(contractId, user.Id, TransactionInputType.Minus, valStr);
     }
 
     private async Task Transfer(Guid contractId, string userId, string method, string val)
@@ -107,7 +107,7 @@ public class BalanceController : OperationController
             TransactionId = Guid.NewGuid(),
         };
 
-        var inputWithSignatureSerialized = CreateInputWithSignature<TransactionInput>(transactionInput, false);
+        var inputWithSignatureSerialized = CreateInputWithSignature<TransactionInput>(transactionInput, false, userId);
 
         _logger.LogInformation($"signedInput: {inputWithSignatureSerialized}");
 

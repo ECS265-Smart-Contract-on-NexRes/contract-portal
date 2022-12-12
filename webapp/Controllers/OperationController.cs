@@ -2,19 +2,24 @@ using Microsoft.AspNetCore.Mvc;
 using ContractPortal.Models.KVServerInput;
 using System.Text.Json;
 using ContractPortal.Models;
+using ContractPortal.Services;
 
 public class OperationController : ControllerBase
 {
     private readonly ILogger<OperationController> _logger;
+    private IUserService _userService;
 
-    public OperationController(ILogger<OperationController> logger)
+    public OperationController(ILogger<OperationController> logger,
+                               IUserService userService)
     {
         _logger = logger;
+        _userService = userService;
     }
 
-    protected string CreateInputWithSignature<T>(T input, bool escape) where T : IInput
+    protected string CreateInputWithSignature<T>(T input, bool escape, string userId) where T : IInput
     {
-        var user = (User)HttpContext.Items["User"];
+        var user = _userService.GetAll()
+                               .FirstOrDefault(usr => usr.Id == userId);
 
         // Sign the input with user id and contract unique id
         // and add the signature as part of the input with signature.
