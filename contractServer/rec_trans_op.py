@@ -98,7 +98,7 @@ def try_transaction(user_id, func, input_para, func_list, init_para,
     if func == "get":
         return {'success': True, 'ret': init_para['vaultData'] }
     else:
-        return {success: True}
+        return {'success': True}
 
 
 server = socket.socket()

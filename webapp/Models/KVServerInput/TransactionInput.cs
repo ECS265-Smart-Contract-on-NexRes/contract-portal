@@ -13,7 +13,7 @@ public class TransactionInput : IInput
     [JsonPropertyName("transactionType")]
     public string  TransactionType { get; set; }
     [JsonPropertyName("params")]
-    public List<string> Params {get; set;}
+    public List<object> Params {get; set;}
     [JsonPropertyName("transactionId")]
     public Guid TransactionId { get; set; }
 }

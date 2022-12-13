@@ -10,6 +10,7 @@ using ContractPortal.Models;
 using ContractPortal.Models.KVServerInput;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using ContractPortal.Services;
 
 namespace ContractPortal.Controllers;
 
@@ -23,7 +24,8 @@ public class BinaryController : OperationController
     private readonly ILogger<BinaryController> _logger;
 
     public BinaryController(ILogger<BinaryController> logger,
-                            Process process) : base(logger)
+                            Process process,
+                            IUserService userService) : base(logger, userService)
     {
         _logger = logger;
         _process = process;

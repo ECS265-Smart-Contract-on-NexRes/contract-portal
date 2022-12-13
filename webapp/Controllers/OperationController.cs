@@ -16,6 +16,12 @@ public class OperationController : ControllerBase
         _userService = userService;
     }
 
+    protected string CreateInputWithSignature<T>(T input, bool escape) where T : IInput
+    {
+        var user = (User)HttpContext.Items["User"];
+        return CreateInputWithSignature<T>(input, escape, user.Id);
+    }
+
     protected string CreateInputWithSignature<T>(T input, bool escape, string userId) where T : IInput
     {
         var user = _userService.GetAll()

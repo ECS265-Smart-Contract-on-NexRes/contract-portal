@@ -46,7 +46,7 @@ export const Transfer = function () {
                 setSuccessAlert(true);
             }).catch((e) => {
                 console.log(`binary upload failed: ${e}`);
-                setFailureMsg(e)
+                setFailureMsg(e.message);
                 setFailureAlert(true);
             });
     }

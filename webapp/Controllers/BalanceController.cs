@@ -6,6 +6,7 @@ using ContractPortal.Models;
 using ContractPortal.Models.KVServerInput;
 using Microsoft.AspNetCore.Mvc;
 using SockNet.ClientSocket;
+using ContractPortal.Services;
 
 namespace ContractPortal.Controllers;
 
@@ -23,7 +24,8 @@ public class BalanceController : OperationController
 
     public BalanceController(ILogger<BalanceController> logger,
                             Process process,
-                            SocketClient client) : base(logger)
+                            SocketClient client, 
+                            IUserService userService) : base(logger, userService)
     {
         _client = client;
         _logger = logger;
@@ -43,7 +45,7 @@ public class BalanceController : OperationController
             TransactionType = TransactionInputType.Get,
             UserId = user.Id,
             ContractId = contractId,
-            Params = new List<string> { },
+            Params = new List<object> { },
             TransactionId = Guid.NewGuid(),
         };
 
@@ -92,18 +94,18 @@ public class BalanceController : OperationController
 
         var context = HttpContext;
         var user = (User)HttpContext.Items["User"];
-        await Transfer(contractId, recipient, TransactionInputType.Add, valStr);
-        await Transfer(contractId, user.Id, TransactionInputType.Minus, valStr);
+        await Transfer(contractId, recipient, TransactionInputType.Add, val);
+        await Transfer(contractId, user.Id, TransactionInputType.Minus, val);
     }
 
-    private async Task Transfer(Guid contractId, string userId, string method, string val)
+    private async Task Transfer(Guid contractId, string userId, string method, int val)
     {
         var transactionInput = new TransactionInput
         {
             TransactionType = method,
             UserId = userId,
             ContractId = contractId,
-            Params = new List<string> { val },
+            Params = new List<object> { val },
             TransactionId = Guid.NewGuid(),
         };
 
