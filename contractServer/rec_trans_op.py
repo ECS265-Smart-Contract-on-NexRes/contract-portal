@@ -52,7 +52,7 @@ def split_function(filepath):
 
 
 def try_transaction(user_id, func, input_para, func_list, init_para,
-                    contract_id, check_para, signature):
+                    contract_id, check_para, signature, verified):
     # get init para
     for i in init_para:
         cur.execute("SELECT data,pub_key FROM paramater where para_name='" +
@@ -62,11 +62,11 @@ def try_transaction(user_id, func, input_para, func_list, init_para,
         init_para[i] = data
     op_time = time.time()
     operation = func
-    Nonempty, success = True, False
+    Nonempty, success, failureMsg = True, False, ''
     print(init_para, type(check_para))
     check_para = json.dumps(check_para, separators=(',', ':'))
     print(pub_key, signature, check_para)
-    if not (verifying(pub_key, signature, check_para)):
+    if (not verified and not verifying(pub_key, signature, check_para)):
         return {'success': False, 'ret': "Signature verification failed!"}
     if func in func_list:
         if init_para['vaultData'] == '':
@@ -79,11 +79,14 @@ def try_transaction(user_id, func, input_para, func_list, init_para,
             init_para['vaultData'] = str(
                 int(init_para['vaultData']) + input_para['data'])
             success = True
-        elif Nonempty and func == "minus" and int(
+        elif Nonempty and func == "minus":
+            if int(
                 init_para['vaultData']) >= input_para['data']:
-            init_para['vaultData'] = str(
+                init_para['vaultData'] = str(
                 int(init_para['vaultData']) - input_para['data'])
-            success = True
+                success = True
+            else:
+                msg = 'Not enough balance!'
         elif Nonempty and func == "get":
             init_para['vaultData'] = init_para['vaultData']
             success = True
@@ -98,63 +101,93 @@ def try_transaction(user_id, func, input_para, func_list, init_para,
     if func == "get":
         return {'success': True, 'ret': init_para['vaultData'] }
     else:
-        return {'success': True}
+        if success:
+            return {'success': True}
+        else: 
+            return {'success': False,  'ret': msg}
 
 
 server = socket.socket()
 
-server.bind(("", 6900))  
+try:
+    server.bind(("", 6900))  
 
-server.listen(5)  # Listen to port
+    server.listen(5)  # Listen to port
 
-print("Listen to port..")
-
-while True:
-    conn, addr = server.accept()  # Wait for connection
-
-    print("conn:", conn, "\naddr:", addr)  
+    print("Listen to port..")
 
     while True:
-        data = conn.recv(4096)  
-        if not data:  
-            print("Disconnect")
-            break
+        conn, addr = server.accept()  # Wait for connection
+
+        print("conn:", conn, "\naddr:", addr)  
+
+        while True:
+            data = conn.recv(4096)  
+            if not data:  
+                print("Disconnect")
+                break
+            
+            decodedData = data.decode("utf-8")
+            data = json.loads(decodedData)
         
-        decodedData = data.decode("utf-8")
-        data = json.loads(decodedData)
-        
-        print
-        user_id, sol_file, func_name, para, contract_id, signature = \
-            data['input']['userId'], \
-            data['input']['contractId'], \
-            data['input']['transactionType'], \
-            data['input']['params'], \
-            data['input']['transactionId'], \
-            data['signature']
+            # verifying(data['signature'], )
+            db_con_init = sqlite3.connect("transcation.db")
+            cur_init = db_con_init.cursor()
+            print
 
-        print("Receive command：", data, type(data))
-        sol_file = "test.sol"
+            verified = False
+            operations = []
+            serverInput = data['input']
+            if serverInput['type'] == 'transaction':
+                cur_init.execute("SELECT DISTINCT pub_key FROM paramater where user_id ='" + user_id + "'")
+                tmp = cur_init.fetchall()
+                pub_key = tmp[0][0].encode()
+                verified = verifying(pub_key , data['signature'], json.dumps( serverInput, separators=(',', ':')))
+                if not verified:
+                    conn.sendall(bytes(json.dumps({'success': False, 'ret': "Signature verification failed!"}).encode("utf-8")))
+                    continue
+                operations = [serverInput['minusSenderBalanceOp'], serverInput['addRecipientBalanceOp']]
+            else:
+                operations = [serverInput]
+            cur_init.close()
+            
+            result = {'success': True }
 
-        db_con = sqlite3.connect("transcation.db")
-        cur = db_con.cursor()
-
-        init_para, func_list = split_function(sol_file)
-        # analysis function input para
-        f = open("./" + sol_file.strip(".sol") + '.json')
-        compiled_sol = json.load(f)
-        func_input = compiled_sol["contracts"]["SimpleStorage.sol"]["Vault"][
-            "abi"]
-
-        input_para = {}
-        for func in func_input:
-            if func['name'] == func_name:
-                for inpu in range(len(func['inputs'])):
-                    input_para[func['inputs'][inpu]['name']] = para[inpu]
-
-        result = try_transaction(user_id, func_name, input_para, func_list, init_para,
-                        contract_id,
-                        data['input'], data['signature'])
-        db_con.commit()
-        cur.close()
-        conn.sendall(bytes(json.dumps(result).encode("utf-8")))
-server.close()
+            for op in operations:
+                user_id, sol_file, func_name, para, contract_id, signature = \
+                    op['userId'], \
+                    op['contractId'], \
+                    op['type'], \
+                    op['params'], \
+                    op['transactionId'], \
+                    data['signature']
+    
+                print("Receive command：", data, type(data))
+                sol_file = "test.sol"
+    
+                db_con = sqlite3.connect("transcation.db")
+                cur = db_con.cursor()
+    
+                init_para, func_list = split_function(sol_file)
+                # analysis function input para
+                f = open("./" + sol_file.strip(".sol") + '.json')
+                compiled_sol = json.load(f)
+                func_input = compiled_sol["contracts"]["SimpleStorage.sol"]["Vault"][
+                    "abi"]
+    
+                input_para = {}
+                for func in func_input:
+                    if func['name'] == func_name:
+                        for inpu in range(len(func['inputs'])):
+                            input_para[func['inputs'][inpu]['name']] = para[inpu]
+    
+                result = try_transaction(user_id, func_name, input_para, func_list, init_para,
+                                contract_id,
+                                data['input'], data['signature'], verified)
+                if not result['success']:
+                    break
+                db_con.commit()
+                cur.close()
+            conn.sendall(bytes(json.dumps(result).encode("utf-8")))
+except Exception as e:
+    server.close()

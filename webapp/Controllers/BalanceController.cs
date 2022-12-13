@@ -24,7 +24,7 @@ public class BalanceController : OperationController
 
     public BalanceController(ILogger<BalanceController> logger,
                             Process process,
-                            SocketClient client, 
+                            SocketClient client,
                             IUserService userService) : base(logger, userService)
     {
         _client = client;
@@ -40,16 +40,16 @@ public class BalanceController : OperationController
         var context = HttpContext;
         var user = (User)HttpContext.Items["User"];
 
-        var transactionInput = new TransactionInput
+        var transactionInput = new OperationInput
         {
-            TransactionType = TransactionInputType.Get,
+            Type = OperationInputType.Get,
             UserId = user.Id,
             ContractId = contractId,
             Params = new List<object> { },
             TransactionId = Guid.NewGuid(),
         };
 
-        var inputWithSignatureSerialized = CreateInputWithSignature<TransactionInput>(transactionInput, false);
+        var inputWithSignatureSerialized = CreateInputWithSignature<OperationInput>(transactionInput, false);
 
         _logger.LogInformation($"signedInput: {inputWithSignatureSerialized}");
 
@@ -80,36 +80,37 @@ public class BalanceController : OperationController
     [Route("api/balance/update")]
     public async Task Update([FromBody] TransactionRequest request)
     {
+        var user = (User)HttpContext.Items["User"];
+        var senderId = user.Id;
+
         var recipient = request.Recipient;
         var contractId = request.ContractId;
         var valStr = request.ValStr;
 
         var val = int.Parse(valStr);
-        var userBalanceStr = await Get(contractId);
-        int userBalance;
-        if (!int.TryParse(userBalanceStr, out userBalance) ||
-            userBalance - val < 0) {
-            throw new Exception("User does not have enough balance to make the transaciton!");
-        }
 
-        var context = HttpContext;
-        var user = (User)HttpContext.Items["User"];
-        await Transfer(contractId, recipient, TransactionInputType.Add, val);
-        await Transfer(contractId, user.Id, TransactionInputType.Minus, val);
-    }
-
-    private async Task Transfer(Guid contractId, string userId, string method, int val)
-    {
-        var transactionInput = new TransactionInput
+        var transacInput = new TransactionInput
         {
-            TransactionType = method,
-            UserId = userId,
-            ContractId = contractId,
-            Params = new List<object> { val },
-            TransactionId = Guid.NewGuid(),
+            Sender = senderId,
+            AddRecipientBalanceOp = new OperationInput
+            {
+                Type = OperationInputType.Add,
+                UserId = recipient,
+                ContractId = Guid.Parse(contractId),
+                Params = new List<object> { val },
+                TransactionId = Guid.NewGuid()
+            },
+            MinusSenderBalanceOp = new OperationInput
+            {
+                Type = OperationInputType.Minus,
+                UserId = senderId,
+                ContractId = Guid.Parse(contractId),
+                Params = new List<object> { val },
+                TransactionId = Guid.NewGuid()
+            }
         };
 
-        var inputWithSignatureSerialized = CreateInputWithSignature<TransactionInput>(transactionInput, false, userId);
+        var inputWithSignatureSerialized = CreateInputWithSignature<TransactionInput>(transacInput, false, senderId);
 
         _logger.LogInformation($"signedInput: {inputWithSignatureSerialized}");
 
@@ -128,8 +129,8 @@ public class BalanceController : OperationController
 
             _logger.LogInformation(@$"
                 Contract Id: {contractId}
-                User Id:     {userId}
-                method:      {method}
+                User Id:     {senderId}
+                type:        transaction
                 value:       {val}
                 receive replay from server regarding  : {recDataStr}");
         }

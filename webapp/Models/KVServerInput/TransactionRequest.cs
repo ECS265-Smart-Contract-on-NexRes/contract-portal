@@ -5,7 +5,7 @@ namespace ContractPortal.Models.KVServerInput;
 public class TransactionRequest
 {
     [JsonPropertyName("contractId")]
-    public Guid ContractId { get; set;}
+    public string ContractId { get; set;}
     [JsonPropertyName("recipient")]
     public string Recipient { get; set; }
     [JsonPropertyName("valStr")]

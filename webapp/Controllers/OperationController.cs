@@ -3,6 +3,7 @@ using ContractPortal.Models.KVServerInput;
 using System.Text.Json;
 using ContractPortal.Models;
 using ContractPortal.Services;
+using System.Text.Json.Serialization;
 
 public class OperationController : ControllerBase
 {
@@ -29,7 +30,9 @@ public class OperationController : ControllerBase
 
         // Sign the input with user id and contract unique id
         // and add the signature as part of the input with signature.
-        var inputSerilized = JsonSerializer.Serialize(input);
+        var inputSerilized = JsonSerializer.Serialize(input, options: new () {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        });
         var signature = Signature.Sign(user.PrivateKey, inputSerilized);
         _logger.LogInformation($"Get balance transaction signature: {signature}");
         var inputWithSignature = new InputWithSignature<T>

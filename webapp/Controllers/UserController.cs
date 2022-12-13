@@ -30,9 +30,30 @@ public class UsersController : ControllerBase
     [HttpGet]
     [Authorize]
     [Route("api/user/list")]
-    public List<User> List() {
+    public List<User> List()
+    {
         return _userService.GetAll()
             .Where(usr => usr.Id != ((User)HttpContext.Items["User"]).Id)
             .ToList();
+    }
+
+    [HttpGet]
+    [Authorize]
+    [Route("api/user/privatekey")]
+    public string GetPrivateKey()
+    {
+        return _userService.GetAll()
+            .FirstOrDefault(usr => usr.Id != ((User)HttpContext.Items["User"]).Id)
+            .PrivateKey;
+    }
+
+    [HttpPut]
+    [Authorize]
+    [Route("api/user/privatekey/{key}")]
+    public void PutPrivateKey(string key)
+    {
+        var user =_userService.GetAll()
+            .FirstOrDefault(usr => usr.Id != ((User)HttpContext.Items["User"]).Id);
+        user.PrivateKey = key;
     }
 }
