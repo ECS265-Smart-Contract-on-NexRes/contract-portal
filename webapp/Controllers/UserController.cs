@@ -9,10 +9,12 @@ using ContractPortal.Services;
 public class UsersController : ControllerBase
 {
     private IUserService _userService;
+    private ILogger<UsersController> _logger;
 
-    public UsersController(IUserService userService)
+    public UsersController(IUserService userService, ILogger<UsersController> logger)
     {
         _userService = userService;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -40,20 +42,22 @@ public class UsersController : ControllerBase
     [HttpGet]
     [Authorize]
     [Route("api/user/privatekey")]
-    public string GetPrivateKey()
+    public object GetPrivateKey()
     {
-        return _userService.GetAll()
-            .FirstOrDefault(usr => usr.Id != ((User)HttpContext.Items["User"]).Id)
+        var privateKey = _userService.GetAll()
+            .FirstOrDefault(usr => usr.Id == ((User)HttpContext.Items["User"]).Id)
             .PrivateKey;
+        return new { privateKey = privateKey };
     }
 
     [HttpPut]
     [Authorize]
-    [Route("api/user/privatekey/{key}")]
-    public void PutPrivateKey(string key)
+    [Route("api/user/privatekey")]
+    public void PutPrivateKey([FromBody] PrivateKeyUpdateRequest request)
     {
-        var user =_userService.GetAll()
-            .FirstOrDefault(usr => usr.Id != ((User)HttpContext.Items["User"]).Id);
-        user.PrivateKey = key;
+        var user = _userService.GetAll()
+            .FirstOrDefault(usr => usr.Id == ((User)HttpContext.Items["User"]).Id);
+        _logger.LogInformation($" New Private Key for {user.Id}: {request.NewPrivateKey}");
+        user.PrivateKey = request.NewPrivateKey;
     }
 }

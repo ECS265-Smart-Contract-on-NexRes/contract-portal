@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Navbar, NavbarBrand, NavItem, NavLink, Nav, TabContent, Container, Row, Col, Card, CardTitle, CardText, Button, List, ListGroupItem, ListGroup, CardBody } from 'reactstrap';
+import { Input, Navbar, NavbarBrand, NavItem, NavLink, Nav, TabContent, Container, Row, Col, Card, CardTitle, CardText, Button, List, ListGroupItem, ListGroup, CardBody } from 'reactstrap';
 import { Link, Outlet } from 'react-router-dom';
 import './NavMenu.css';
 import { useRecoilValue } from 'recoil';
 import { authAtom } from '../_state';
 import { history } from '../_helpers/history';
 import { useFetchWrapper } from '../_helpers';
+import ProgressButton, { STATE } from 'react-progress-button';
 
 export function NavMenu() {
   const [activeTab, setActiveTab] = useState(window.location.pathname);
   const [balance, setBalance] = useState(null);
+  const [privateKey, setPrivateKey] = useState('');
+  const [updateButtonState, setUpdateButtonState] = useState('');
   const fetchWrapper = useFetchWrapper();
   const auth = useRecoilValue(authAtom);
 
@@ -19,11 +22,26 @@ export function NavMenu() {
     }
   }
 
+  const UpdatePrivateKey = function () {
+    setUpdateButtonState(STATE.LOADING);
+    fetchWrapper.put('api/user/privatekey', { newPrivateKey: privateKey })
+      .then(() => {
+        setUpdateButtonState(STATE.SUCCESS);
+      })
+      .catch(() => {
+        setUpdateButtonState(STATE.ERROR);
+      })
+  }
+
   const getBalance = function () {
     fetchWrapper.get('api/balance/get')
-      .then((res) => { 
+      .then((res) => {
         setBalance(res);
-      })
+      });
+    fetchWrapper.get('api/user/privatekey')
+      .then((res) => {
+        setPrivateKey(res.privateKey);
+      });
   }
 
   useEffect(getBalance, [])
@@ -37,7 +55,7 @@ export function NavMenu() {
       </header>
       <Container style={{ marginTop: '20px' }}>
         <Row>
-          <Col md="12" lg="3">
+          <Col md="12" lg="5">
             <Card
               body
               className="my-2"
@@ -66,8 +84,30 @@ export function NavMenu() {
                 <ListGroupItem>
                   <b>Your Balance:</ b> {balance}
                 </ListGroupItem>
+                <ListGroupItem>
+                  <div className='mb-3'>
+                    <b>Your private key:</ b>
+                  </div>
+                  <div  className='mb-3'>
+                    <Input
+                      id="exampleText"
+                      name="text"
+                      type="textarea"
+                      value={privateKey}
+                      onChange={(e) => {
+                        setPrivateKey(e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div  className='mb-3'>
+                  <ProgressButton onClick={UpdatePrivateKey} state={updateButtonState}>
+                    Update!
+                  </ProgressButton>
+                  </div>
+                </ListGroupItem>
               </ListGroup>
               <CardBody>
+                <div><b>User log out here:</b></div>
                 <Button
                   onClick={() => {
                     localStorage.clear();
@@ -75,12 +115,12 @@ export function NavMenu() {
                     history.go('/');
                   }}
                   color="danger">
-                  Log out
+                  <b>log out</ b>
                 </Button>
               </CardBody>
             </Card>
           </Col>
-          <Col md="12" lg="9">
+          <Col md="12" lg="7">
             <Nav tabs>
               <NavItem>
                 <NavLink tag={Link}
