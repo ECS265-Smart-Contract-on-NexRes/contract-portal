@@ -46,7 +46,10 @@ function useFetchWrapper() {
     
     function handleResponse(response) {
         return response.text().then(text => {
-            const data = text && JSON.parse(text);
+            let data = text;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {}
             
             if (!response.ok) {
                 if ([401, 403].includes(response.status) && auth?.token) {
@@ -56,7 +59,7 @@ function useFetchWrapper() {
                     history.push('/login');
                 }
     
-                const error = (data && data.message) || response.statusText;
+                const error = (data && data.message) || data || response.statusText;
                 return Promise.reject(error);
             }
     

@@ -61,7 +61,12 @@ export const Transfer = function () {
             .then(loadBalance)
             .catch((e) => {
                 console.log(`binary upload failed: ${e}`);
-                setFailureMsg(e.message);
+                if (e.message) {
+                    setFailureMsg(e.message);
+                }
+                else {
+                    setFailureMsg(e)
+                }
                 setFailureAlert(true);
             });
     }
@@ -136,7 +141,7 @@ export const Transfer = function () {
                 Transaction succeeded! You can check your current balance and all your previous transactions
             </Alert>
             <Alert color="danger" isOpen={showFailureAlert} toggle={onFailureAlertDismiss}>
-                Transaction failed! Reason: {failureMsg}
+                Transaction failed! Reason: <b>{failureMsg}</b>
             </Alert>
         </Container>
     );

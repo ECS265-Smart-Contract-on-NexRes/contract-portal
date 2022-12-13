@@ -1,22 +1,30 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { Input, Navbar, NavbarBrand, NavItem, NavLink, Nav, TabContent, Container, Row, Col, Card, CardTitle, CardText, Button, List, ListGroupItem, ListGroup, CardBody } from 'reactstrap';
+import { Alert, Input, Navbar, NavbarBrand, NavItem, NavLink, Nav, TabContent, Container, Row, Col, Card, CardTitle, CardText, Button, List, ListGroupItem, ListGroup, CardBody } from 'reactstrap';
 import { Link, Outlet } from 'react-router-dom';
 import './NavMenu.css';
 import { useRecoilValue } from 'recoil';
 import { authAtom } from '../_state';
 import { history } from '../_helpers/history';
 import { useFetchWrapper } from '../_helpers';
-import ProgressButton, { STATE } from 'react-progress-button';
+import { RevolvingDot } from 'react-loader-spinner';
 import { useRecoilState } from 'recoil';
 import { userBalanceAtom } from '../_state';
 
 export function NavMenu() {
-  const [balance]  = useRecoilState(userBalanceAtom);
+  const [balance, setUserBalance] = useRecoilState(userBalanceAtom);
   const [activeTab, setActiveTab] = useState(window.location.pathname);
   const [privateKey, setPrivateKey] = useState('');
-  const [updateButtonState, setUpdateButtonState] = useState('');
-  const fetchWrapper = useFetchWrapper();
   const auth = useRecoilValue(authAtom);
+  const [isUploadingPrivateKey, setIsUploadingPrivateKey] = useState(false);
+
+  const fetchWrapper = useFetchWrapper();
+
+  function loadBalance() {
+    return fetchWrapper.get('api/balance/get')
+      .then((res) => {
+        setUserBalance(res);
+      });
+  }
 
   const toggle = function (tab) {
     if (activeTab != tab) {
@@ -25,13 +33,15 @@ export function NavMenu() {
   }
 
   const UpdatePrivateKey = function () {
-    setUpdateButtonState(STATE.LOADING);
+    setIsUploadingPrivateKey(true);
     fetchWrapper.put('api/user/privatekey', { newPrivateKey: privateKey })
       .then(() => {
-        setUpdateButtonState(STATE.SUCCESS);
+        setIsUploadingPrivateKey(false);
       })
-      .catch(() => {
-        setUpdateButtonState(STATE.ERROR);
+      .then(loadBalance)
+      .catch((e) => {
+        setIsUploadingPrivateKey(false);
+        setUserBalance(null);
       })
   }
 
@@ -80,7 +90,11 @@ export function NavMenu() {
               </CardText>
               <ListGroup flush>
                 <ListGroupItem>
-                  <b>Your Balance:</ b> {balance}
+                  <b>Your Balance:</ b> {balance == null ?
+                    <Alert color="danger">
+                      The website need your <b>correct</ b> private key to query you balance.
+                    </Alert> :
+                    balance}
                 </ListGroupItem>
                 <ListGroupItem>
                   <div className='mb-3'>
@@ -98,11 +112,31 @@ export function NavMenu() {
                       }}
                     />
                   </div>
-                  <div className='mb-3'>
-                    <ProgressButton onClick={UpdatePrivateKey} state={updateButtonState}>
-                      Update!
-                    </ProgressButton>
-                  </div>
+                  <container className='mb-3'>
+                    <Row>
+                      <Col xs="3">
+                        <Button
+                          onClick={UpdatePrivateKey}
+                          color="primary">
+                          <b>Upload</ b>
+                        </Button>
+                      </Col>
+                      <Col xs="3">
+                        {isUploadingPrivateKey ? <RevolvingDot
+                          height="30"
+                          width="30"
+                          color="#4fa94d"
+                          secondaryColor=''
+                          ariaLabel="revolving-dot-loading"
+                          radius="5"
+                          wrapperStyle={{}}
+                          wrapperClass=""
+                          visible={true}
+                        /> : null}
+                      </Col>
+                    </Row>
+
+                  </container>
                 </ListGroupItem>
               </ListGroup>
               <CardBody>
@@ -114,7 +148,7 @@ export function NavMenu() {
                     history.go('/');
                   }}
                   color="danger">
-                  <b>log out</ b>
+                  <b>Log out</ b>
                 </Button>
               </CardBody>
             </Card>

@@ -78,7 +78,7 @@ public class BalanceController : OperationController
     [Authorize]
     [HttpPost]
     [Route("api/balance/update")]
-    public async Task Update([FromBody] TransactionRequest request)
+    public async Task<ActionResult> Update([FromBody] TransactionRequest request)
     {
         var user = (User)HttpContext.Items["User"];
         var senderId = user.Id;
@@ -137,7 +137,8 @@ public class BalanceController : OperationController
 
         if (!recData.Success)
         {
-            throw new Exception(recData.Ret);
+            return BadRequest(recData.Ret);
         }
+        return Ok();
     }
 }
