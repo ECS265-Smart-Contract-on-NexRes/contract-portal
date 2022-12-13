@@ -1,14 +1,30 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import AppRoutes from './AppRoutes';
 import './custom.css';
 import { useRecoilValue } from 'recoil';
 import { Login } from './components/Login';
 import { authAtom } from './_state';
-import {NavMenu} from './components/NavMenu'
+import { NavMenu } from './components/NavMenu'
+import { useSetRecoilState } from 'recoil';
+import { userBalanceAtom } from './_state';
+import { useFetchWrapper } from './_helpers';
 
 function App() {
   const auth = useRecoilValue(authAtom);
+  const setUserBalance = useSetRecoilState(userBalanceAtom);
+  const fetchWrapper = useFetchWrapper();
+
+  function loadBalance() {
+    if (auth) {
+      fetchWrapper.get('api/balance/get')
+        .then((res) => {
+          setUserBalance(res);
+        });
+    }
+  }
+
+  useEffect(loadBalance, [])
 
   return (
     <div>

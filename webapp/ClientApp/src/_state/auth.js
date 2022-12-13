@@ -6,4 +6,10 @@ const authAtom = atom({
     default: JSON.parse(localStorage.getItem('user'))
 });
 
-export { authAtom };
+const userBalanceAtom = atom({
+    key: 'userBalance',
+    // get initial state from local storage to enable user to stay logged in
+    default: null
+});
+
+export { authAtom, userBalanceAtom };

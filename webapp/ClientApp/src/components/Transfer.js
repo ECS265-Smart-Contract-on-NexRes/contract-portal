@@ -1,6 +1,8 @@
 import React, { Component, useEffect, useState } from 'react';
 import { Container, Form, FormGroup, Label, Input, FormText, Button, Alert } from 'reactstrap';
 import { useFetchWrapper } from '../_helpers/fetchWrapper';
+import { useSetRecoilState } from 'recoil';
+import { userBalanceAtom } from '../_state';
 
 export const Transfer = function () {
     const [users, setUserIds] = useState([]);
@@ -16,6 +18,17 @@ export const Transfer = function () {
     const [failureMsg, setFailureMsg] = useState('');
 
     const fetchWrapper = useFetchWrapper();
+
+    const setUserBalance = useSetRecoilState(userBalanceAtom);
+
+    function loadBalance() {
+        fetchWrapper.get('api/balance/get')
+            .then((res) => {
+                setUserBalance(res);
+            });
+    }
+
+    useEffect(loadBalance, [])
 
     useEffect(() => {
         fetchWrapper
@@ -44,7 +57,9 @@ export const Transfer = function () {
         })
             .then((res) => {
                 setSuccessAlert(true);
-            }).catch((e) => {
+            })
+            .then(loadBalance)
+            .catch((e) => {
                 console.log(`binary upload failed: ${e}`);
                 setFailureMsg(e.message);
                 setFailureAlert(true);
@@ -68,7 +83,8 @@ export const Transfer = function () {
                         type="select"
                         on
                         onChange={(e) => {
-                            setSelectedUserId(e.target.value);}}
+                            setSelectedUserId(e.target.value);
+                        }}
                     >
                         {users.map((usr) =>
                             <option value={`${usr.id}`} key={usr.id}>
@@ -86,7 +102,8 @@ export const Transfer = function () {
                         name="contract"
                         type="select"
                         onChange={(e) => {
-                            setSelectedContractId(e.target.value);}}
+                            setSelectedContractId(e.target.value);
+                        }}
                     >
                         {contracts.map((contract) =>
                             <option value={`${contract.key}`} key={contract.key}>
@@ -104,11 +121,12 @@ export const Transfer = function () {
                         name="amount"
                         value={amount}
                         onChange={(e) => {
-                            setAmount(e.target.value);}}
+                            setAmount(e.target.value);
+                        }}
                     />
                 </FormGroup>
                 <Button
-                    onClick={() => {handleSubmit()}}
+                    onClick={() => { handleSubmit() }}
                     color="primary">
                     Submit
                 </Button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { Input, Navbar, NavbarBrand, NavItem, NavLink, Nav, TabContent, Container, Row, Col, Card, CardTitle, CardText, Button, List, ListGroupItem, ListGroup, CardBody } from 'reactstrap';
 import { Link, Outlet } from 'react-router-dom';
 import './NavMenu.css';
@@ -7,10 +7,12 @@ import { authAtom } from '../_state';
 import { history } from '../_helpers/history';
 import { useFetchWrapper } from '../_helpers';
 import ProgressButton, { STATE } from 'react-progress-button';
+import { useRecoilState } from 'recoil';
+import { userBalanceAtom } from '../_state';
 
 export function NavMenu() {
+  const [balance]  = useRecoilState(userBalanceAtom);
   const [activeTab, setActiveTab] = useState(window.location.pathname);
-  const [balance, setBalance] = useState(null);
   const [privateKey, setPrivateKey] = useState('');
   const [updateButtonState, setUpdateButtonState] = useState('');
   const fetchWrapper = useFetchWrapper();
@@ -33,18 +35,14 @@ export function NavMenu() {
       })
   }
 
-  const getBalance = function () {
-    fetchWrapper.get('api/balance/get')
-      .then((res) => {
-        setBalance(res);
-      });
+  const getPrivateKey = function () {
     fetchWrapper.get('api/user/privatekey')
       .then((res) => {
         setPrivateKey(res.privateKey);
       });
   }
 
-  useEffect(getBalance, [])
+  useEffect(getPrivateKey, [])
 
   return (
     <div>
@@ -88,8 +86,9 @@ export function NavMenu() {
                   <div className='mb-3'>
                     <b>Your private key:</ b>
                   </div>
-                  <div  className='mb-3'>
+                  <div className='mb-3'>
                     <Input
+                      rows="19"
                       id="exampleText"
                       name="text"
                       type="textarea"
@@ -99,10 +98,10 @@ export function NavMenu() {
                       }}
                     />
                   </div>
-                  <div  className='mb-3'>
-                  <ProgressButton onClick={UpdatePrivateKey} state={updateButtonState}>
-                    Update!
-                  </ProgressButton>
+                  <div className='mb-3'>
+                    <ProgressButton onClick={UpdatePrivateKey} state={updateButtonState}>
+                      Update!
+                    </ProgressButton>
                   </div>
                 </ListGroupItem>
               </ListGroup>
