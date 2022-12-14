@@ -53,15 +53,19 @@ public class UserService : IUserService
         // Registration
         else
         {
-            usr = new User
+            if (_users.ContainsKey(model.Id)) {
+                return null;
+            }
+            _users[model.Id] = new User
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = model.Id,
                 Username = model.Username,
                 Password = model.Password
             };
-            _users[usr.Id] = usr;
         }
 
+
+        usr = _users[model.Id];
         // authentication successful so generate jwt token
         var token = generateJwtToken(usr);
 
