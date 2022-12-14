@@ -2,8 +2,9 @@ import React, { useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-import { useRecoilValue } from 'recoil';
+import {Nav, NavItem, NavLink} from 'reactstrap'
 
+import { useRecoilValue } from 'recoil';
 import { authAtom } from '../_state';
 import { useUserActions } from '../_actions';
 import { history } from '../_helpers/history';
@@ -45,7 +46,29 @@ function Login() {
     return (
         <div className="col-md-6 offset-md-3 mt-5">
             <div className="card">
-                <h4 className="card-header">Login</h4>
+                <Nav>
+                    <NavItem>
+                        <NavLink
+                            active
+                            href="#"
+                        >
+                            Link
+                        </NavLink>
+                    </NavItem>
+                    <NavItem>
+                        <NavLink href="#">
+                            Another Link
+                        </NavLink>
+                    </NavItem>
+                    <NavItem>
+                        <NavLink
+                            disabled
+                            href="#"
+                        >
+                            Disabled Link
+                        </NavLink>
+                    </NavItem>
+                </Nav>
                 <div className="card-body">
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="form-group">

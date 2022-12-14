@@ -154,7 +154,7 @@ export function NavMenu() {
             </Card>
           </Col>
           <Col md="12" lg="7">
-            <Nav tabs>
+            <Nav justified tabs>
               <NavItem>
                 <NavLink tag={Link}
                   className={activeTab === "/" ? 'active' : ''}

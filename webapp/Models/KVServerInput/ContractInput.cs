@@ -5,7 +5,7 @@ namespace ContractPortal.Models.KVServerInput;
 public class ContractInput : IInput
 {
     [JsonPropertyName("type")]
-    public static string Type {get;} = "contract";
+    public string Type {get {return  "contract";}}
     [JsonPropertyName("userId")]
     public string UserId { get; set; }
     [JsonPropertyName("contractId")]
