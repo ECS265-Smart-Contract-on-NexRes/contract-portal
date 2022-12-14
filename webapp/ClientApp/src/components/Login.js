@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-import {Nav, NavItem, NavLink} from 'reactstrap'
+import { Nav, NavItem, NavLink, Form, FormGroup } from 'reactstrap'
 
 import { useRecoilValue } from 'recoil';
 import { authAtom } from '../_state';
@@ -14,6 +14,7 @@ export { Login };
 function Login() {
     const auth = useRecoilValue(authAtom);
     const userActions = useUserActions();
+    const [activeTab, setActiveTab] = useState('login');
 
     useEffect(() => {
         // redirect to home if already logged in
@@ -46,49 +47,44 @@ function Login() {
     return (
         <div className="col-md-6 offset-md-3 mt-5">
             <div className="card">
-                <Nav>
+                <Nav tabs justified>
                     <NavItem>
                         <NavLink
-                            active
-                            href="#"
+                            className={activeTab == 'login' ? 'active' : ''}
+                            onClick={function noRefCheck() { setActiveTab('login');}}
                         >
-                            Link
-                        </NavLink>
-                    </NavItem>
-                    <NavItem>
-                        <NavLink href="#">
-                            Another Link
+                            Sign In
                         </NavLink>
                     </NavItem>
                     <NavItem>
                         <NavLink
-                            disabled
-                            href="#"
+                            className={activeTab == 'register' ? 'active' : ''}
+                            onClick={function noRefCheck() { setActiveTab('register'); }}
                         >
-                            Disabled Link
+                            Register
                         </NavLink>
                     </NavItem>
                 </Nav>
                 <div className="card-body">
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className="form-group">
+                    <Form onSubmit={handleSubmit(onSubmit)}>
+                        <FormGroup className="form-group">
                             <label>Username</label>
                             <input name="username" type="text" {...register('username')} className={`form-control ${errors.username ? 'is-invalid' : ''}`} />
                             <div className="invalid-feedback">{errors.username?.message}</div>
-                        </div>
-                        <div className="form-group">
+                        </FormGroup>
+                        <FormGroup className="form-group">
                             <label>Password</label>
                             <input name="password" type="password" {...register('password')} className={`form-control ${errors.password ? 'is-invalid' : ''}`} />
                             <div className="invalid-feedback">{errors.password?.message}</div>
-                        </div>
+                        </FormGroup>
                         <button disabled={isSubmitting} className="btn btn-primary">
                             {isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                            Login
+                            {activeTab}
                         </button>
                         {errors.apiError &&
                             <div className="alert alert-danger mt-3 mb-0">{errors.apiError?.message}</div>
                         }
-                    </form>
+                    </Form>
                 </div>
             </div>
         </div>
