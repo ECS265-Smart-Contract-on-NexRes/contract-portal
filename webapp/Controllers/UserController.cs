@@ -23,8 +23,14 @@ public class UsersController : ControllerBase
     {
         var response = _userService.Authenticate(model);
 
-        if (response == null)
-            return BadRequest(new { message = "Username or password is incorrect" });
+        if (response == null) {
+            if (model.Type == AuthenticationType.Login) {
+                return BadRequest(new { message = "Username or password is incorrect" });
+            }
+            else {
+                return BadRequest(new {message = "Registration failed"});
+            } 
+        }
 
         return Ok(response);
     }

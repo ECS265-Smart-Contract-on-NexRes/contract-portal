@@ -17,8 +17,8 @@ function useUserActions () {
         getAll
     }
 
-    function login(username, password) {
-        return fetchWrapper.post('api/user/login', { username, password })
+    function login(username, password, id, type) {
+        return fetchWrapper.post('api/user/login', { username, password, id, type})
             .then(user => {
                 // store user details and jwt token in local storage to keep user logged in between page refreshes
                 localStorage.setItem('user', JSON.stringify(user));
